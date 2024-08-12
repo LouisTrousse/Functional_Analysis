@@ -44,7 +44,7 @@ assign_colors <- function(dataset, cluster_column, colors) {
     # Print a warning message
     warning("The number of clusters is different of the number of colors specified. A default color palette has been used.")
     # Create a color palette based on the default rainbow and assign it to the clusters
-    default_colors <- SetNames(rainbow(n_cluster), unique_clusters)
+    default_colors <- setNames(rainbow(n_cluster), unique_clusters)
     # Assign the colors to the clusters based on the cluster column and the poistion of each unique cluster in the list of clusters, to enshure to associate a color if the cluster is not a number 
     dataset$color <- default_colors[dataset[[cluster_column]]]
   }
@@ -331,7 +331,7 @@ create_functional_space <- function(mat_funct, traits_weights = NULL, nbdim = 11
   
   # Variance explained by the axes
   variance_explained <- cumsum(fit$eig[fit$eig >= 0]) / sum(fit$eig[fit$eig > 0])
-  cat("Variance explained by the axes:\n")
+  cat("Variance explained by axes:\n")
   print(variance_explained)
   
   invisible(list(fd.coord = fd.coord, variance_explained = variance_explained, n_dims = n_dims, gower = gower, fit = fit))
@@ -828,7 +828,7 @@ space_traits<- function(Fonctional_diversity_coord, Species_functionnal_traits, 
 }
 
 ##### Trait distribution in functional space #####
-abund_traits_distribution <- function (Site_Data, condition_column, Abundance_matrix, colors = "black", edges_colors = colors, Species_Functional_Entities, Fonctional_diversity_coord, threshold = 0, layout = "column", all_in_one = FALSE, PERMANOVA = TRUE, n_dim = 2, n_perm = 9999) {
+abund_traits_distribution <- function (Site_Data, condition_column, Abundance_matrix, colors = "black", edges_colors = colors, Species_Functional_Entities, Fonctional_diversity_coord, threshold = 0, layout = "column", all_in_one = FALSE, PERMANOVA = TRUE, n_dim = 2, n_perm = 9999, trait_relative_abundances = TRUE) {
   ### Function to plot the abundance and distribution of traits in the functional space ###
   
   # load necessary packages
@@ -897,7 +897,7 @@ abund_traits_distribution <- function (Site_Data, condition_column, Abundance_ma
   # Transform the list into a matrix
   ab.fe.conditions <- do.call(rbind, ab.fe.conditions)
   
-  ## Functional identity (fI) trends
+  # Functional identity (fI) trends
   fd.coord.FE <- Fonctional_diversity_coord %>% 
     as.data.frame() %>% 
     rownames_to_column(var = "FE") # add the FE as a column
@@ -939,7 +939,6 @@ abund_traits_distribution <- function (Site_Data, condition_column, Abundance_ma
   rownames(Weighted_centroid) <- conditions # Add row names
   
   # Plot the weighted centroids of the assemblages in the functional space
-  
   # First, we retrieve the global potential functional space (background polygon)
   m2 <- fd.coord[rownames(fd.coord),] # Get the coordinates of the functional space
   tr2 <-tri.mesh(m2[,1],m2[,2]) # Triangulate the functional space
@@ -995,8 +994,7 @@ abund_traits_distribution <- function (Site_Data, condition_column, Abundance_ma
     # For each site, we retrieve the conditions and plot the FI trends for each condition
     Plot_Sites_all_years <- lapply (unique_sites, function(x){
       # retrieve the years for the site
-      years <- unique(Site_Data[Site_Data$Site == x,][[Condition_column]])
-      years <- unique(Site_Data[Site_Data$Site == x,]$Year) ##OLD 
+      years <- unique(Site_Data[Site_Data$Site == x,][[condition_column]])
       
       # retieve abundance of the FE in the different conditions for the site and filter the FEs with an abundance > threshold
       threshold <- threshold
@@ -1398,66 +1396,106 @@ abund_traits_distribution <- function (Site_Data, condition_column, Abundance_ma
   
   #First we link the traits to the abundance matrix
   # We merge species functionnal entities, their character detail and their abundances in a long format data frame
-  if 
+  if (trait_relative_abundances == TRUE) { 
+    
+  Species_traits_abund_temp <- merge(Species_Functional_Entities %>% 
+                                  mutate(across(everything(), as.factor)) %>%# tranform all collums as factors
+                                  pivot_longer(cols = -c(FE, Species)
+                                               , names_to = "Trait",
+                                               values_to = "Value"), # Reshape the data frame to have the traits in a single collum
+                                Species_Weights %>%  # We merge the species weights (abundances) with the species functionnal entities
+                                  pivot_longer(cols = - Species , names_to = "Condition", values_to = "Abundance", values_transform = as.double) %>% 
+                                  filter(Abundance > 0), # we filter the species with an abundance higher than 0 
+                                by = "Species")# we merge the data frame by the species
   
+  # We merge the data frame with the site data 
+  if ("Quadrat" %in% colnames(Site_Data)){
+  Species_traits_abund <- Species_traits_abund_temp %>% 
+    left_join(Site_Data %>%
+                select(-Quadrat) %>%
+                distinct(), by = c("Condition" = condition_column))# we merge with the Site data to have informations about each condition
+  } else { 
+    Species_traits_abund <- Species_traits_abund_temp %>%
+      left_join(Site_Data %>% 
+                  rownames_to_column(var = "Quadrat") %>%
+                  select(-Quadrat) %>%
+                  distinct(),
+                by = c("Condition" = condition_column))# we merge with the Site data to have informations about each condition
+    }
   
-  
-  
-  
-  
-  Species_traits_abund <- merge(Species_Functional_Entities %>% 
-                                  pivot_longer(cols = -c(FE, Species), names_to = "Trait", values_to = "Value",values_transform = as.character),
-                                Species_Weights %>% 
-                                  pivot_longer(cols = - Species , names_to = "Condition", values_to = "Abundance", values_transform = as.double), 
-                                by = "Species") %>% 
-    filter(Abundance > 0) %>% # we filter the species with an abundance higher than 0
-    left_join(Site_Data %>% 
-                rownames_to_column(var= "Quadrat")%>% 
-                select(-Quadrat) %>% 
-                distinct(), join_by("Condition"== "Year"))# we merge with the Sites data to have the condition of each site
-  
-  # We calculate for each site the relative abundance of each functional trait category
+  # We calculate for each site, condition and trait category the abundance of each functional trait entity
   Site_trait_cat_abundances <- Species_traits_abund %>% 
-    group_by(Site, Condition, Trait) %>% 
-    mutate(Abundance_tot = sum(Abundance)) %>%
-    ungroup() %>% 
-    mutate(Relativ_Abundance = sum(Abundance)/Abundance_tot)
-    summarise(Relativ_Abundance = sum(Abundance)/Abundance_tot)
+    group_by(Site, Condition, Trait, Value) %>% 
+    mutate(Abundance_Tot = sum(Abundance)) %>% 
+    select(-Species, 
+           -FE, 
+           -color) # keep only relevant collums
   
-  view(Site_trait_cat_abundances)
+  # We plot the relative abundances of functional trait categories in each site face to the chosen condition
   
+  # First we need to define a default palette for plots depending on the number of trait entities
+  # we will construct a dataframe with the number of trait entities and the corresponding color 
   
-  
-  # We retrieve the unique sites
-  Sites <- unique(Site_Data$Site)
+  data_palette <- data.frame(Trait_number = 1:20,
+                             Value = c("#a6cee3","#1f78b4","#003366" ,"#b2df8a", "#33CC33", "#336600","#fb9a99", "#CC3333", "#e31a1c","#fdbf6f", "#ff7f00", "#FF6600", "#cab2d6", "#6a3d9a", "#ffff99","#F9D71C",  "#b15928", "#663300", "#666666", "#1c1b1b"))
 
-  # We calculates the abundances
-  Site_trait_cat_abundances <- lapply(Sites, function (site){ 
-    
-    # We filter the data for the site (condition that contain the name of the site)
-    data_site <- Species_traits_abund %>% 
-      filter(Site == site)
-    
-    # Then, we iterate through the traits to calculate the relative abundance of each trait
-    trait_cat_abundances <- lapply(unique(data_site$Trait), function(trait){
-      
-      # We filter the data for the trait
-      data_trait <- data_site %>% 
-        filter(Trait == trait)
-      
-      # We calculate the relative abundance of the trait category
-      cat_abundances <- data_trait %>% 
-        summarise(Relative_abundance = sum(Abundance)/sum(data_site$Abundance))
-      
-      # We add the trait name to the data frame
-      trait_abundance$Trait <- trait
-      
-      return(trait_abundance)
-    })
-      
-    })
+  # Based on this data frame we can define a different color palette for each number of trait entities
   
-  return(list(FI_plot = FI_plot ,Plot_FI_all_years = Plot_FI_all_years , PERMANOVA_test_df = PERMANOVA_test_df))
+  # We will have one plot per site 
+  Traits_abundances_plot <- lapply(unique(Site_trait_cat_abundances$Site), function(x){
+    # We filter the data frame to keep only the data for the site x
+    Site_trait_cat_abundances_temp <- Site_trait_cat_abundances %>% 
+      filter(Site == x)
+    
+    # We then iterate threw each Trait
+    Trait_abundances_plot <- lapply(unique(Site_trait_cat_abundances_temp$Trait), function(y){
+      
+      
+      #We filter the data frame to keep only the data for the trait y
+      Site_trait_cat_abundances_temp2 <- Site_trait_cat_abundances_temp %>% 
+        filter(Trait == y) %>% 
+        mutate(Year = extract_year(Condition))
+      
+      # Retrieve the number of trait entities
+      n_trait <- length(unique(Site_trait_cat_abundances_temp2$Value))
+      # Based on the number of trait entities we select the corresponding color palette
+      colors <- data_palette[1: n_trait,]
+      
+      # We plot the relative abundances of the trait categories in each site face to the chosen condition
+      Trait_abundances_plot <- ggplot(Site_trait_cat_abundances_temp2, aes(x = Year, y = Abundance, fill = Value))+
+        geom_bar(stat = "identity")+
+        theme_classic() +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+        theme(panel.border = element_rect(colour = "black", fill = NA)) +
+        theme(axis.text = element_text(face = "bold", size = 12)) +
+        theme(axis.title = element_text(face = "bold")) +
+        theme(axis.line = element_line(color = "black", linewidth = 0.5, linetype = "solid")) +
+        scale_fill_manual(values = colors$Value) +
+        theme(axis.title.x= element_blank())+
+        labs(y = "Relative abundance",
+             title = as.name(y))+
+        theme(plot.title = element_text(hjust = 0.5, size = 14, face = "bold"))
+      return(Trait_abundances_plot)
+    })
+    
+    # For each element we add the morphological trait category name to the list 
+    names(Trait_abundances_plot) <- unique(Site_trait_cat_abundances_temp$Trait)
+    
+    # We can plot all the trait categories in the same plot (one per site)
+    Trait_abundances_plot_all <- do.call(grid.arrange,Trait_abundances_plot)
+    
+    return(Trait_abundances_plot_all)
+    
+  }) # eo lapply
+  
+  # add the site name to the list
+  names(Traits_abundances_plot) <- unique(Site_trait_cat_abundances$Site)
+  } else {
+    Traits_abundances_plot = NA
+  }
+  
+  # We can return results in a list
+  return(list(FI_plot = FI_plot ,Plot_FI_all_years = Plot_FI_all_years , PERMANOVA_test_df = PERMANOVA_test_df, Traits_abundances = Plot_Traits_abundances_all_sites))
   
 } # eo function
 

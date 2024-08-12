@@ -60,7 +60,7 @@ assign_colors <- function(dataset, cluster_column, colors) {
     # Print a warning message
     warning("The number of clusters is different of the number of colors specified. A default color palette has been used.")
     # Create a color palette based on the default rainbow and assign it to the clusters
-    default_colors <- SetNames(rainbow(n_cluster), unique_clusters)
+    default_colors <- setNames(rainbow(n_cluster), unique_clusters)
     # Assign the colors to the clusters based on the cluster column and the poistion of 
     # each unqiue cluster in the list of clusters, to enshure to associate a color if the cluster is not a number 
     dataset$color <- default_colors[dataset[[cluster_column]]]
@@ -309,11 +309,7 @@ FES <- merge(spe_fes %>%
                rownames_to_column(var = "Species"),
              fes %>% 
                rownames_to_column(var = "FE"),
-             by = "FE") 
-
-
-
-
+             by = "FE")
 
 #### TRAITMENT ####
 #### 1. Function to create a functional space ####
@@ -1531,19 +1527,21 @@ FI_analysis <- abund_traits_distribution(Site_Data = sites,
                                          Abundance_matrix = ab,
                                          colors = colors,
                                          edges_colors = colors,
-                                         Species_Functional_Entities = spe_fes ,
+                                         Species_Functional_Entities = FES ,
                                          Fonctional_diversity_coord = fd.coord,
                                          threshold = 0, 
                                          layout = "column",
                                          all_in_one = TRUE, 
                                          PERMANOVA = TRUE, 
                                          n_perm = 9999,
-                                         n_dim = 4)
+                                         n_dim = 4, 
+                                         trait_relative_abundances = TRUE)
 
 # Retrieve the results
 FI_plot <- FI_analysis$FI_plot
 Plot_FI_all_years <- FI_analysis$Plot_FI_all_years
 PERMANOVA_test_df <- FI_analysis$PERMANOVA_test_df
+
 
 # Display results
 plot(FI_plot)
