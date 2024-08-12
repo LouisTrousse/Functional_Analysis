@@ -360,7 +360,12 @@ frich_in_functionnal_space <- function(Site_Data, Abundance_matrix, Fonctional_d
   ab = Abundance_matrix
   ab.conditions <- lapply(conditions, function(x) {
     # Filter the quadrats for the specific condition
-    quad <- rownames(Site_Data[Site_Data[[condition_column]] == x, ])
+    if ("Quadrat" %in% colnames(Site_Data)){
+      quad <- Site_Data$Quadrat[Site_Data[[condition_column]] == x]
+    } else {
+      quad <- rownames(Site_Data[Site_Data[[condition_column]] == x,])
+    }
+    
     # Filter the abundance matrix for the specific condition and calculate the sum of abundances because we are interrested in the presence of species for the condition
     colSums(ab[rownames(ab) %in% quad, ])
   })
@@ -377,19 +382,15 @@ frich_in_functionnal_space <- function(Site_Data, Abundance_matrix, Fonctional_d
   chg <- convhulln(Fonctional_diversity_coord, options = "FA") # Calculate convex hull for the global functional space
   
   Frich <- lapply(conditions, function(x) {
-    x = conditions[1]
     # Identify species where abundance > 0
     species <- colnames(ab.conditions)[which(ab.conditions[x, ] > 0)]
     # Subset Species_Functional_Entities to only include FE of present species
     fes_cond <- Species_Functional_Entities %>% 
       subset(Species %in% species)
     
-    
-    
-    
-#### HERE ####
     # Subset Fonctional_diversity_coord to only include rows with names in fes_cond
-    m <- Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% rownames(fes_cond), ]
+    m <- Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% fes_cond$FE, ]
+    
     # Compute the convex hull of m
     ch <- convhulln(m, options = "FA")
     # Return a vector with several calculated values
@@ -419,7 +420,7 @@ frich_in_functionnal_space <- function(Site_Data, Abundance_matrix, Fonctional_d
     fes_cond <- Species_Functional_Entities %>% 
       subset(Species %in% species, )
     # Subset Fonctional_diversity_coord to only include rows with names in fes_cond
-    m <- Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% rownames(fes_cond), ]
+    m <- Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% fes_cond$FE, ]
     # Compute the convex hull of m
     tr <- tri.mesh(m[, 1], m[, 2])
     ch <- convex.hull(tr)
@@ -482,7 +483,11 @@ plot_frich <- function(Site_Data, Abundance_matrix, Fonctional_diversity_coord, 
   ab = Abundance_matrix
   ab.conditions <- lapply(conditions, function(x) {
     # Filter the quadrats for the specific condition
-    quad <- rownames(Site_Data[Site_Data[[condition_column]] == x, ])
+    if ("Quadrat" %in% colnames(Site_Data)){
+      quad <- Site_Data$Quadrat[Site_Data[[condition_column]] == x]
+    } else {
+      quad <- rownames(Site_Data[Site_Data[[condition_column]] == x,])
+    }
     # Filter the abundance matrix for the specific condition
     colSums(ab[rownames(ab) %in% quad, ])
   })
@@ -502,9 +507,10 @@ plot_frich <- function(Site_Data, Abundance_matrix, Fonctional_diversity_coord, 
     # Identify species where abundance > 0
     species <- colnames(ab.conditions)[which(ab.conditions[x, ] > 0)]
     # Subset Species_Functional_Entities to only include FE of present species
-    fes_cond <- Species_Functional_Entities$Species %in% species
+    fes_cond <- Species_Functional_Entities %>% 
+      subset(Species %in% species, )
     # Subset Fonctional_diversity_coord to only include rows with names in fes_cond
-    m <- Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% rownames(fes_cond), ]
+    m <- Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% fes_cond$FE, ]
     # Compute the convex hull of m
     ch <- convhulln(m, options = "FA")
     # Return a vector with several calculated values
@@ -531,9 +537,10 @@ plot_frich <- function(Site_Data, Abundance_matrix, Fonctional_diversity_coord, 
     # Identify species where abundance > 0
     species <- colnames(ab.conditions)[which(ab.conditions[x, ] > 0)]
     # Subset Species_Functional_Entities to only include FE of present species
-    fes_cond <- Species_Functional_Entities$Species %in% species, ]
+    fes_cond <- Species_Functional_Entities %>% 
+      subset(Species %in% species, )
     # Subset Fonctional_diversity_coord to only include rows with names in fes_cond
-    m <- Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% rownames(fes_cond), ]
+    m <- Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% fes_cond$FE, ]
     # Compute the convex hull of m
     tr <- tri.mesh(m[, 1], m[, 2])
     ch <- convex.hull(tr)
@@ -584,7 +591,12 @@ plot_frich <- function(Site_Data, Abundance_matrix, Fonctional_diversity_coord, 
       # Data arrangements to retrieve abundances for each specific conditions
       ab.specific_condition <- lapply(Specific_Conditions, function(x) {
         # filter the quadrats for the specific condition
-        quad <- rownames(sites[sites$Year == x,])
+        if ("Quadrat" %in% colnames(Site_Data)){
+          quad <- Site_Data$Quadrat[Site_Data[[condition_column]] == x]
+        } else {
+          quad <- rownames(Site_Data[Site_Data[[condition_column]] == x,])
+        } #eo if statement
+        
         # filter the abundance matrix for the specific condition and calculate the sum of abundance
         colSums(ab_specific_conditions[rownames(ab_specific_conditions) %in% quad,])
       })#eo lapply
@@ -598,9 +610,10 @@ plot_frich <- function(Site_Data, Abundance_matrix, Fonctional_diversity_coord, 
         # filter the species for the specific condition (species present in these samples)
         species <- colnames(ab.specific_condition)[which(ab.specific_condition[x,] > 0)]
         # filter the functional traits for this species
-        fes_cond <- spe_fes[rownames(spe_fes) %in% species, ]
-        # filter the functional space for these functional traits
-        m <- Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% rownames(fes_cond),]
+        fes_cond <- Species_Functional_Entities %>% 
+          subset(Species %in% species, )
+        # Subset Fonctional_diversity_coord to only include rows with names in fes_cond
+        m <- Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% fes_cond$FE, ]
         # calculate the convex hull for the functional space
         ch <- convhulln(m, options = "FA")
         # return the number of species, the relative number of species, the number of FEs, the relative number of FEs, and the volume of the convex hull
@@ -618,7 +631,7 @@ plot_frich <- function(Site_Data, Abundance_matrix, Fonctional_diversity_coord, 
       # null model is based on the random selection of species in the dataset
       
       # create a copy of FEs to be used in the permutations
-      spe_fes_random = spe_fes
+      spe_fes_random = Species_Functional_Entities
       
       # Calculate permuted Frich 
       Frich_permuted <- lapply(Specific_Conditions, function (x) {
@@ -627,9 +640,10 @@ plot_frich <- function(Site_Data, Abundance_matrix, Fonctional_diversity_coord, 
         #create n_perm aleatory permutation of the functional traits for specified condition
         perm <- sapply((1:n_perm), function (i) {
           # shuffle the functional traits to associate them to random species (create a random functional space)
-          spe_fes_random$FE <- sample(spe_fes$FE)    
+          spe_fes_random$FE <- sample(Species_Functional_Entities$FE)    
           # Filter the functional traits for the species present in specific condition
-          random_fes_cond <- spe_fes_random[rownames(spe_fes_random) %in% species, ]
+          random_fes_cond <- spe_fes_random %>% 
+            subset(Species %in% species, )
           # Filter the functional space for these functional traits
           random_m <- fd.coord[rownames(fd.coord) %in% random_fes_cond,]
           # Calculate the convex hull for this random functional space
@@ -839,7 +853,13 @@ abund_traits_distribution <- function (Site_Data, condition_column, Abundance_ma
   ab = Abundance_matrix
   ab.conditions <- lapply(conditions, function(x) {
     # get the quadrats coresponding to the condition
-    quad <- rownames(Site_Data[Site_Data$Year == x,])
+    # if Site_Data have a column named Quadrat, use it to filter the quadrats
+    if ("Quadrat" %in% colnames(Site_Data)){
+      quad <- Site_Data$Quadrat[Site_Data[[condition_column]] == x]
+    } else {
+      quad <- rownames(Site_Data[Site_Data[[condition_column]] == x,])
+    }
+    
     # get the abundance of the species in the condition as the mean of the abundance of the species in the sites
     colMeans(ab[rownames(ab) %in% quad,])
   })#eo lapply
@@ -878,20 +898,17 @@ abund_traits_distribution <- function (Site_Data, condition_column, Abundance_ma
   ab.fe.conditions <- do.call(rbind, ab.fe.conditions)
   
   ## Functional identity (fI) trends
-  fd.coord <- Fonctional_diversity_coord
   fd.coord.FE <- Fonctional_diversity_coord %>% 
     as.data.frame() %>% 
     rownames_to_column(var = "FE") # add the FE as a column
   
-  # retrieve the FE of the species in a data frame
-  spe_fes_df <- rownames_to_column(spe_fes, var = "Species")
-  
   # merge the coordinates and the species FEs to get the coordinates of the species in the functional space
-  FE_SP_coord <- merge(fd.coord.FE, spe_fes_df, by = "FE") %>% 
-    select(-FE) %>% # remove the first column
-    column_to_rownames(var = "Species") # set the row names to the species
+  FE_SP_coord <- merge(fd.coord.FE, Species_Functional_Entities %>%
+                        select(Species, FE)# select only wished columns
+                       , by = "FE") %>% 
+    select(-FE) # remove FE column
   
-  # Obtaining weighted centroids for each assemblage and Time point 
+  # Obtaining weighted centroids for each assemblage and Time point
   # The weighted centroid is the sum of the product of the coordinates of the species in the functional space by the weight of the species. This species weight is the abundance of the species in the assemblage. 
   # For each Condition, we calculate the weighted centroid of the assemblage in the functional space
   # To this we multiply the coordinates of the species in the functional space by the abundance of the species in the assemblage and sum the results. 
@@ -899,8 +916,7 @@ abund_traits_distribution <- function (Site_Data, condition_column, Abundance_ma
   
   # First we merge The weight dataset to the species coordinates dataset using bindrows. 
   # By doing this we will not have any doubt about the order of the species in the two datasets.
-  Species_Weights_coord <- left_join(Species_Weights, FE_SP_coord %>% 
-                                       rownames_to_column(var= "Species"), by = "Species")
+  Species_Weights_coord <- left_join(Species_Weights, FE_SP_coord, by = "Species")
   
   # Then for each condition we calculate weighted species coordinates in the functional space
   Weighted_centroid <- lapply(conditions, function (x) {
@@ -976,10 +992,11 @@ abund_traits_distribution <- function (Site_Data, condition_column, Abundance_ma
     # First we retrieve the sites
     unique_sites <- unique(Site_Data$Site)
     
-    # For each site, we retrieve the years and plot the FI trends for each year
+    # For each site, we retrieve the conditions and plot the FI trends for each condition
     Plot_Sites_all_years <- lapply (unique_sites, function(x){
       # retrieve the years for the site
-      years <- unique(Site_Data[Site_Data$Site == x,]$Year)
+      years <- unique(Site_Data[Site_Data$Site == x,][[Condition_column]])
+      years <- unique(Site_Data[Site_Data$Site == x,]$Year) ##OLD 
       
       # retieve abundance of the FE in the different conditions for the site and filter the FEs with an abundance > threshold
       threshold <- threshold
@@ -1381,6 +1398,13 @@ abund_traits_distribution <- function (Site_Data, condition_column, Abundance_ma
   
   #First we link the traits to the abundance matrix
   # We merge species functionnal entities, their character detail and their abundances in a long format data frame
+  if 
+  
+  
+  
+  
+  
+  
   Species_traits_abund <- merge(Species_Functional_Entities %>% 
                                   pivot_longer(cols = -c(FE, Species), names_to = "Trait", values_to = "Value",values_transform = as.character),
                                 Species_Weights %>% 
@@ -1405,10 +1429,10 @@ abund_traits_distribution <- function (Site_Data, condition_column, Abundance_ma
   
   
   # We retrieve the unique sites
-  sites <- unique(Site_Data$Site)
+  Sites <- unique(Site_Data$Site)
 
   # We calculates the abundances
-  Site_trait_cat_abundances <- lapply(sites, function (site){ 
+  Site_trait_cat_abundances <- lapply(Sites, function (site){ 
     
     # We filter the data for the site (condition that contain the name of the site)
     data_site <- Species_traits_abund %>% 
