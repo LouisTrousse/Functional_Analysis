@@ -1,7 +1,7 @@
 # This file contain functions to help to conduct a Functionnal Analysis
 # Theses functions can be source in your dataset to be used in your analysis
 
-#### GENERAL FUNCTIONS ####
+#### 1. GENERAL FUNCTIONS ####
 # These functions are not meant to be used directly but are used by the other functions
 
 ##### Assign Colors to Clusters #####
@@ -280,7 +280,7 @@ create_convex_hull_plot <- function(Fonctional_diversity_coord, binded, n_cluste
     theme(plot.title = element_text(hjust = 0.5, size = 14, face = "bold")) # centered bold title
 }
 
-#### FUNCTIONAL ANALYSIS FUNCTIONS ####
+#### 2. FUNCTIONAL ANALYSIS FUNCTIONS ####
 # These functions are meant to be used directly in your analysis and allow you to conduct analysis as in the following papers: 
 
 ##### Function to create a functional space #####
