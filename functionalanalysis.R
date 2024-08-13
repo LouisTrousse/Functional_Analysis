@@ -291,7 +291,7 @@ create_functional_space <- function(mat_funct, traits_weights = NULL, nbdim = 11
   require(tidyverse)
   
   # Load "Quality functionnal space" function
-  source("./Raw_files/quality_funct_space.R")  # Change to the current function directory
+  source("./quality_funct_space.R")  # Change to the current function directory
   
   #retrieve mat_funct as required by the function quality_funct_space
   mat_funct <- mat_funct %>% select(-Species)%>%
@@ -330,11 +330,11 @@ create_functional_space <- function(mat_funct, traits_weights = NULL, nbdim = 11
   fit <- cmdscale(gower, eig = TRUE, k = n_dims)  # PCoA
   
   # Variance explained by the axes
-  variance_explained <- cumsum(fit$eig[fit$eig >= 0]) / sum(fit$eig[fit$eig > 0])
+  explained_variance <- cumsum(fit$eig[fit$eig >= 0]) / sum(fit$eig[fit$eig > 0])
   cat("Variance explained by axes:\n")
-  print(variance_explained)
+  print(explained_variance)
   
-  invisible(list(fd.coord = fd.coord, variance_explained = variance_explained, n_dims = n_dims, gower = gower, fit = fit))
+  invisible(list(fd.coord = fd.coord, explained_variance = explained_variance, n_dims = n_dims, gower = gower, fit = fit))
 }
 
 ##### Functional Richness in Functional Space #####
@@ -827,7 +827,7 @@ space_traits<- function(Fonctional_diversity_coord, Species_functionnal_traits, 
   return(list(pcoa_vector_plot = pcoa_vector_plot, Factorial_plots = Factorial_plots))
 }
 
-##### Trait distribution in functional space #####
+##### Trait distribution in Functional space #####
 abund_traits_distribution <- function (Site_Data, condition_column, Abundance_matrix, colors = "black", edges_colors = colors, Species_Functional_Entities, Fonctional_diversity_coord, threshold = 0, layout = "column", all_in_one = FALSE, PERMANOVA = TRUE, n_dim = 2, n_perm = 9999, trait_relative_abundances = TRUE) {
   ### Function to plot the abundance and distribution of traits in the functional space ###
   
