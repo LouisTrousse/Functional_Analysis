@@ -338,135 +338,136 @@ create_functional_space <- function(mat_funct, traits_weights = NULL, nbdim = 11
 }
 
 ##### Functional Richness in Functional Space #####
-frich_in_functionnal_space <- function(Site_Data, Abundance_matrix, Fonctional_diversity_coord, Species_Functional_Entities, condition_column, colors, edges_colors = colors, layout = "column") {
-  ### Function to plot the functional richness of each condition of a dataset ###
-  
-  # load necessary packages
-  require(tripack)
-  require(tidyverse)
-  
-  #retrieve all the conditions in the dataset
-  conditions <- unique(Site_Data[[condition_column]])
-  
-  # Assign colors to each condition for later plotting
-  Site_Data <- assign_colors(dataset = Site_Data, cluster_column = condition_column, colors = colors)
-  Site_Data2 <- assign_colors(dataset = Site_Data, cluster_column = condition_column, colors = edges_colors)
-  
-  # Create a named vector of colors for conditions
-  condition_colors <- setNames(Site_Data$color, Site_Data[[condition_column]])
-  edges_colors <- setNames(Site_Data2$color, Site_Data2[[condition_column]])
-  
-  # Rearrange data to retrieve abundances for each specific condition
-  ab = Abundance_matrix
-  ab.conditions <- lapply(conditions, function(x) {
-    # Filter the quadrats for the specific condition
-    if ("Quadrat" %in% colnames(Site_Data)){
-      quad <- Site_Data$Quadrat[Site_Data[[condition_column]] == x]
-    } else {
-      quad <- rownames(Site_Data[Site_Data[[condition_column]] == x,])
-    }
-    
-    # Filter the abundance matrix for the specific condition and calculate the sum of abundances because we are interrested in the presence of species for the condition
-    colSums(ab[rownames(ab) %in% quad, ])
-  })
-  
-  # Merge the list into a matrix
-  ab.conditions <- do.call(rbind, ab.conditions)
-  # Set the rownames to the conditions
-  rownames(ab.conditions) <- conditions
-  
-  # Calculation of relative richness
-  NbSp_tot <- length(unique(Species_Functional_Entities$Species)) # Number of species in the species_FE dataset
-  
-  # Calculate convex hull for the global functional space
-  chg <- convhulln(Fonctional_diversity_coord, options = "FA") # Calculate convex hull for the global functional space
-  
-  Frich <- lapply(conditions, function(x) {
-    # Identify species where abundance > 0
-    species <- colnames(ab.conditions)[which(ab.conditions[x, ] > 0)]
-    # Subset Species_Functional_Entities to only include FE of present species
-    fes_cond <- Species_Functional_Entities %>% 
-      subset(Species %in% species)
-    
-    # Subset Fonctional_diversity_coord to only include rows with names in fes_cond
-    m <- Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% fes_cond$FE, ]
-    
-    # Compute the convex hull of m
-    ch <- convhulln(m, options = "FA")
-    # Return a vector with several calculated values
-    c(length(species), length(species) / NbSp_tot * 100, dim(m)[1], dim(m)[1] / dim(Fonctional_diversity_coord)[1] * 100, ch$vol / chg$vol)
-  })
-  
-  # Name the list with each condition
-  names(Frich) <- conditions
-  
-  # Merge the list into a matrix
-  Frich <- do.call(rbind, Frich)
-  
-  # Set the column names
-  colnames(Frich) <- c("NbSp", "NbSpP", "NbFEs", "NbFEsP", "Frich (Vol4D)")
-  
-  # Create a data frame with the convex hull coordinates for the global space
-  m2 <- Fonctional_diversity_coord
-  tr2 <- tri.mesh(m2[, 1], m2[, 2])
-  ch2 <- convex.hull(tr2)
-  hull_df_global <- data.frame(x = ch2$x, y = ch2$y, i = ch2$i, group = "Global")
-  
-  # Apply a function to calculate the convex hull for each condition and create the corresponding plot
-  Plots <- lapply(conditions, function(x) {
-    # Identify species where abundance > 0
-    species <- colnames(ab.conditions)[which(ab.conditions[x, ] > 0)]
-    # Subset Species_Functional_Entities to only include FE of present species
-    fes_cond <- Species_Functional_Entities %>% 
-      subset(Species %in% species, )
-    # Subset Fonctional_diversity_coord to only include rows with names in fes_cond
-    m <- Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% fes_cond$FE, ]
-    # Compute the convex hull of m
-    tr <- tri.mesh(m[, 1], m[, 2])
-    ch <- convex.hull(tr)
-    # Create a data frame with the convex hull coordinates
-    hull_df <- data.frame(x = ch$x, y = ch$y, i = ch$i, group = x)
-    
-    # Merge datasets into a single dataframe
-    hull_df_combined <- bind_rows(hull_df_global, hull_df)
-    
-    # Create the plot
-    Plot <- ggplot(hull_df_combined, aes(x = x, y = y)) +
-      geom_polygon(data = hull_df_global, aes(group = group, fill = group, color = group), linewidth = 1, alpha = 0.5) + 
-      geom_polygon(data = hull_df, aes(group = group, fill = group, color = group), linewidth = 1, alpha = 0.5) +
-      labs(title = x, x = "PCoA 1", y = "PCoA 2") +
-      theme_classic() +
-      theme(panel.border = element_rect(colour = "black", fill = NA)) +
-      theme(axis.text = element_text(face = "bold", size = 12)) +
-      theme(axis.title = element_text(face = "bold")) +
-      theme(axis.line = element_line(color = "black", linewidth = 0.5, linetype = "solid")) +
-      scale_fill_manual(values = condition_colors) +
-      scale_color_manual(values = edges_colors) +
-      theme(legend.position = "none") +
-      theme(plot.title = element_text(hjust = 0.5, size = 14, face = "bold")) +
-      annotate("text", x = 0.3, y = 0.3, label = paste("Frich = ", round(Frich[x, 5], 2)), size = 5, color = "black", fontface = "bold") +
-      geom_point(data = data.frame(Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% species, ]), aes(x = Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% species, 1], y = Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% species, 2]), color = colors[x])
-    
-    return(Plot)
-  })
-  
-  # Add the name of the condition to the list of plots
-  names(Plots) <- conditions
-  
-  # Display the plots in a single plot using the display_multiple_plots function
-  Frich_plots <- display_multiple_plots(plots = Plots, layout = layout)
-  
-  return(list(Frich_plots = Frich_plots, hull_df_global = hull_df_global, conditions = conditions, ab.conditions = ab.conditions))
-}
+# frich_in_functionnal_space <- function(Site_Data, Abundance_matrix, Fonctional_diversity_coord, Species_Functional_Entities, condition_column, colors, edges_colors = colors, layout = "column") {
+#   ### Function to plot the functional richness of each condition of a dataset ###
+#   
+#   # load necessary packages
+#   require(tripack)
+#   require(tidyverse)
+#   
+#   #retrieve all the conditions in the dataset
+#   conditions <- unique(Site_Data[[condition_column]])
+#   
+#   # Assign colors to each condition for later plotting
+#   Site_Data <- assign_colors(dataset = Site_Data, cluster_column = condition_column, colors = colors)
+#   Site_Data2 <- assign_colors(dataset = Site_Data, cluster_column = condition_column, colors = edges_colors)
+#   
+#   # Create a named vector of colors for conditions
+#   condition_colors <- setNames(Site_Data$color, Site_Data[[condition_column]])
+#   edges_colors <- setNames(Site_Data2$color, Site_Data2[[condition_column]])
+#   
+#   # Rearrange data to retrieve abundances for each specific condition
+#   ab = Abundance_matrix
+#   ab.conditions <- lapply(conditions, function(x) {
+#     # Filter the quadrats for the specific condition
+#     if ("Quadrat" %in% colnames(Site_Data)){
+#       quad <- Site_Data$Quadrat[Site_Data[[condition_column]] == x]
+#     } else {
+#       quad <- rownames(Site_Data[Site_Data[[condition_column]] == x,])
+#     }
+#     
+#     # Filter the abundance matrix for the specific condition and calculate the sum of abundances because we are interrested in the presence of species for the condition
+#     colSums(ab[rownames(ab) %in% quad, ])
+#   })
+#   
+#   # Merge the list into a matrix
+#   ab.conditions <- do.call(rbind, ab.conditions)
+#   # Set the rownames to the conditions
+#   rownames(ab.conditions) <- conditions
+#   
+#   # Calculation of relative richness
+#   NbSp_tot <- length(unique(Species_Functional_Entities$Species)) # Number of species in the species_FE dataset
+#   
+#   # Calculate convex hull for the global functional space
+#   chg <- convhulln(Fonctional_diversity_coord, options = "FA") # Calculate convex hull for the global functional space
+#   
+#   Frich <- lapply(conditions, function(x) {
+#     # Identify species where abundance > 0
+#     species <- colnames(ab.conditions)[which(ab.conditions[x, ] > 0)]
+#     # Subset Species_Functional_Entities to only include FE of present species
+#     fes_cond <- Species_Functional_Entities %>% 
+#       subset(Species %in% species)
+#     
+#     # Subset Fonctional_diversity_coord to only include rows with names in fes_cond
+#     m <- Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% fes_cond$FE, ]
+#     
+#     # Compute the convex hull of m
+#     ch <- convhulln(m, options = "FA")
+#     # Return a vector with several calculated values
+#     c(length(species), length(species) / NbSp_tot * 100, dim(m)[1], dim(m)[1] / dim(Fonctional_diversity_coord)[1] * 100, ch$vol / chg$vol)
+#   })
+#   
+#   # Name the list with each condition
+#   names(Frich) <- conditions
+#   
+#   # Merge the list into a matrix
+#   Frich <- do.call(rbind, Frich)
+#   
+#   # Set the column names
+#   colnames(Frich) <- c("NbSp", "NbSpP", "NbFEs", "NbFEsP", "Frich (Vol4D)")
+#   
+#   # Create a data frame with the convex hull coordinates for the global space
+#   m2 <- Fonctional_diversity_coord
+#   tr2 <- tri.mesh(m2[, 1], m2[, 2])
+#   ch2 <- convex.hull(tr2)
+#   hull_df_global <- data.frame(x = ch2$x, y = ch2$y, i = ch2$i, group = "Global")
+#   
+#   # Apply a function to calculate the convex hull for each condition and create the corresponding plot
+#   Plots <- lapply(conditions, function(x) {
+#     # Identify species where abundance > 0
+#     species <- colnames(ab.conditions)[which(ab.conditions[x, ] > 0)]
+#     # Subset Species_Functional_Entities to only include FE of present species
+#     fes_cond <- Species_Functional_Entities %>% 
+#       subset(Species %in% species, )
+#     # Subset Fonctional_diversity_coord to only include rows with names in fes_cond
+#     m <- Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% fes_cond$FE, ]
+#     # Compute the convex hull of m
+#     tr <- tri.mesh(m[, 1], m[, 2])
+#     ch <- convex.hull(tr)
+#     # Create a data frame with the convex hull coordinates
+#     hull_df <- data.frame(x = ch$x, y = ch$y, i = ch$i, group = x)
+#     
+#     # Merge datasets into a single dataframe
+#     hull_df_combined <- bind_rows(hull_df_global, hull_df)
+#     
+#     # Create the plot
+#     Plot <- ggplot(hull_df_combined, aes(x = x, y = y)) +
+#       geom_polygon(data = hull_df_global, aes(group = group, fill = group, color = group), linewidth = 1, alpha = 0.5) + 
+#       geom_polygon(data = hull_df, aes(group = group, fill = group, color = group), linewidth = 1, alpha = 0.5) +
+#       labs(title = x, x = "PCoA 1", y = "PCoA 2") +
+#       theme_classic() +
+#       theme(panel.border = element_rect(colour = "black", fill = NA)) +
+#       theme(axis.text = element_text(face = "bold", size = 12)) +
+#       theme(axis.title = element_text(face = "bold")) +
+#       theme(axis.line = element_line(color = "black", linewidth = 0.5, linetype = "solid")) +
+#       scale_fill_manual(values = condition_colors) +
+#       scale_color_manual(values = edges_colors) +
+#       theme(legend.position = "none") +
+#       theme(plot.title = element_text(hjust = 0.5, size = 14, face = "bold")) +
+#       annotate("text", x = 0.3, y = 0.3, label = paste("Frich = ", round(Frich[x, 5], 2)), size = 5, color = "black", fontface = "bold") +
+#       geom_point(data = data.frame(Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% species, ]), aes(x = Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% species, 1], y = Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% species, 2]), color = colors[x])
+#     
+#     return(Plot)
+#   })
+#   
+#   # Add the name of the condition to the list of plots
+#   names(Plots) <- conditions
+#   
+#   # Display the plots in a single plot using the display_multiple_plots function
+#   Frich_plots <- display_multiple_plots(plots = Plots, layout = layout)
+#   
+#   return(list(Frich_plots = Frich_plots, hull_df_global = hull_df_global, conditions = conditions, ab.conditions = ab.conditions))
+# }
 
 ##### Functional Richness against Null Hypothesis #####
-plot_frich <- function(Site_Data, Abundance_matrix, Fonctional_diversity_coord, Species_Functional_Entities, condition_column, colors, edges_colors = colors, layout = "column", compute_null_hypothesis = FALSE, n_perm = 100) {
+frich_in_functionnal_space <- function(Site_Data, Abundance_matrix, Fonctional_diversity_coord, Species_Functional_Entities, condition_column, colors, edges_colors = colors, layout = "column", compute_null_hypothesis = FALSE, n_perm = 100) {
   ### Function to plot the functional richness of each condition of a dataset ###
   
   # load necessary packages
   require(tripack)
   require(tidyverse)
   require(gridExtra)
+  require(matrixStats)
   
   #retrieve all the conditions in the dataset
   conditions <- unique(Site_Data[[condition_column]])
@@ -645,7 +646,7 @@ plot_frich <- function(Site_Data, Abundance_matrix, Fonctional_diversity_coord, 
           random_fes_cond <- spe_fes_random %>% 
             subset(Species %in% species, )
           # Filter the functional space for these functional traits
-          random_m <- fd.coord[rownames(fd.coord) %in% random_fes_cond,]
+          random_m <- Fonctional_diversity_coord[rownames(Fonctional_diversity_coord) %in% random_fes_cond$FE,]
           # Calculate the convex hull for this random functional space
           random_ch <- convhulln(random_m, options = "FA")
           # Return the number of species, the relative number of species, the number of FEs, the relative number of FEs, and the volume of the convex hull
@@ -809,7 +810,7 @@ space_traits<- function(Fonctional_diversity_coord, Species_functionnal_traits, 
       geom_polygon(data = hull_df_global, aes(x = x, y = y), fill = "#CCCCCC30", color = NA) + # Add the global convex hull
       geom_point(data = data, aes(x = Dim1, y = Dim2), color = "black") + # Add the factor coordinates
       geom_label_repel(data= data, aes(label = rownames(data), x = Dim1, y = Dim2), box.padding = 0.5) + # Add the trait labels
-      labs(title = paste("Trait:", x), x = "PCoA1", y = "PCoA2") + # Add the title and axis labels
+      labs(title = paste(x), x = "PCoA1", y = "PCoA2") + # Add the title and axis labels
       theme_classic()+# Apply the minimal theme
       theme(panel.border = element_rect(colour = "black", fill=NA)) +# border of the plot
       theme(axis.text = element_text(face = "bold", size = 12))+ # bold axis text
@@ -828,7 +829,7 @@ space_traits<- function(Fonctional_diversity_coord, Species_functionnal_traits, 
 }
 
 ##### Trait distribution in Functional space #####
-abund_traits_distribution <- function (Site_Data, condition_column, Abundance_matrix, colors = "black", edges_colors = colors, Species_Functional_Entities, Fonctional_diversity_coord, threshold = 0, layout = "column", all_in_one = FALSE, PERMANOVA = TRUE, n_dim = 2, n_perm = 9999, trait_relative_abundances = TRUE) {
+traits_distribution <- function(Site_Data, condition_column, Abundance_matrix, colors = "black", edges_colors = colors, Species_Functional_Entities, Fonctional_diversity_coord, threshold = 0, layout = "column", all_in_one = FALSE, PERMANOVA = TRUE, n_dim = 2, n_perm = 9999, trait_relative_abundances = TRUE) {
   ### Function to plot the abundance and distribution of traits in the functional space ###
   
   # load necessary packages
@@ -904,7 +905,7 @@ abund_traits_distribution <- function (Site_Data, condition_column, Abundance_ma
   
   # merge the coordinates and the species FEs to get the coordinates of the species in the functional space
   FE_SP_coord <- merge(fd.coord.FE, Species_Functional_Entities %>%
-                        select(Species, FE)# select only wished columns
+                         select(Species, FE)# select only wished columns
                        , by = "FE") %>% 
     select(-FE) # remove FE column
   
@@ -1398,104 +1399,104 @@ abund_traits_distribution <- function (Site_Data, condition_column, Abundance_ma
   # We merge species functionnal entities, their character detail and their abundances in a long format data frame
   if (trait_relative_abundances == TRUE) { 
     
-  Species_traits_abund_temp <- merge(Species_Functional_Entities %>% 
-                                  mutate(across(everything(), as.factor)) %>%# tranform all collums as factors
-                                  pivot_longer(cols = -c(FE, Species)
-                                               , names_to = "Trait",
-                                               values_to = "Value"), # Reshape the data frame to have the traits in a single collum
-                                Species_Weights %>%  # We merge the species weights (abundances) with the species functionnal entities
-                                  pivot_longer(cols = - Species , names_to = "Condition", values_to = "Abundance", values_transform = as.double) %>% 
-                                  filter(Abundance > 0), # we filter the species with an abundance higher than 0 
-                                by = "Species")# we merge the data frame by the species
-  
-  # We merge the data frame with the site data 
-  if ("Quadrat" %in% colnames(Site_Data)){
-  Species_traits_abund <- Species_traits_abund_temp %>% 
-    left_join(Site_Data %>%
-                select(-Quadrat) %>%
-                distinct(), by = c("Condition" = condition_column))# we merge with the Site data to have informations about each condition
-  } else { 
-    Species_traits_abund <- Species_traits_abund_temp %>%
-      left_join(Site_Data %>% 
-                  rownames_to_column(var = "Quadrat") %>%
-                  select(-Quadrat) %>%
-                  distinct(),
-                by = c("Condition" = condition_column))# we merge with the Site data to have informations about each condition
+    Species_traits_abund_temp <- merge(Species_Functional_Entities %>% 
+                                         mutate(across(everything(), as.factor)) %>%# tranform all collums as factors
+                                         pivot_longer(cols = -c(FE, Species)
+                                                      , names_to = "Trait",
+                                                      values_to = "Value"), # Reshape the data frame to have the traits in a single collum
+                                       Species_Weights %>%  # We merge the species weights (abundances) with the species functionnal entities
+                                         pivot_longer(cols = - Species , names_to = "Condition", values_to = "Abundance", values_transform = as.double) %>% 
+                                         filter(Abundance > 0), # we filter the species with an abundance higher than 0 
+                                       by = "Species")# we merge the data frame by the species
+    
+    # We merge the data frame with the site data 
+    if ("Quadrat" %in% colnames(Site_Data)){
+      Species_traits_abund <- Species_traits_abund_temp %>% 
+        left_join(Site_Data %>%
+                    select(-Quadrat) %>%
+                    distinct(), by = c("Condition" = condition_column))# we merge with the Site data to have informations about each condition
+    } else { 
+      Species_traits_abund <- Species_traits_abund_temp %>%
+        left_join(Site_Data %>% 
+                    rownames_to_column(var = "Quadrat") %>%
+                    select(-Quadrat) %>%
+                    distinct(),
+                  by = c("Condition" = condition_column))# we merge with the Site data to have informations about each condition
     }
-  
-  # We calculate for each site, condition and trait category the abundance of each functional trait entity
-  Site_trait_cat_abundances <- Species_traits_abund %>% 
-    group_by(Site, Condition, Trait, Value) %>% 
-    mutate(Abundance_Tot = sum(Abundance)) %>% 
-    select(-Species, 
-           -FE, 
-           -color) # keep only relevant collums
-  
-  # We plot the relative abundances of functional trait categories in each site face to the chosen condition
-  
-  # First we need to define a default palette for plots depending on the number of trait entities
-  # we will construct a dataframe with the number of trait entities and the corresponding color 
-  
-  data_palette <- data.frame(Trait_number = 1:20,
-                             Value = c("#a6cee3","#1f78b4","#003366" ,"#b2df8a", "#33CC33", "#336600","#fb9a99", "#CC3333", "#e31a1c","#fdbf6f", "#ff7f00", "#FF6600", "#cab2d6", "#6a3d9a", "#ffff99","#F9D71C",  "#b15928", "#663300", "#666666", "#1c1b1b"))
-
-  # Based on this data frame we can define a different color palette for each number of trait entities
-  
-  # We will have one plot per site 
-  Traits_abundances_plot <- lapply(unique(Site_trait_cat_abundances$Site), function(x){
-    # We filter the data frame to keep only the data for the site x
-    Site_trait_cat_abundances_temp <- Site_trait_cat_abundances %>% 
-      filter(Site == x)
     
-    # We then iterate threw each Trait
-    Trait_abundances_plot <- lapply(unique(Site_trait_cat_abundances_temp$Trait), function(y){
+    # We calculate for each site, condition and trait category the abundance of each functional trait entity
+    Site_trait_cat_abundances <- Species_traits_abund %>% 
+      group_by(Site, Condition, Trait, Value) %>% 
+      mutate(Abundance_Tot = sum(Abundance)) %>% 
+      select(-Species, 
+             -FE, 
+             -color) # keep only relevant collums
+    
+    # We plot the relative abundances of functional trait categories in each site face to the chosen condition
+    
+    # First we need to define a default palette for plots depending on the number of trait entities
+    # we will construct a dataframe with the number of trait entities and the corresponding color 
+    
+    data_palette <- data.frame(Trait_number = 1:20,
+                               Value = c("#a6cee3","#1f78b4","#003366" ,"#b2df8a", "#33CC33", "#336600","#fb9a99", "#CC3333", "#e31a1c","#fdbf6f", "#ff7f00", "#FF6600", "#cab2d6", "#6a3d9a", "#ffff99","#F9D71C",  "#b15928", "#663300", "#666666", "#1c1b1b"))
+    
+    # Based on this data frame we can define a different color palette for each number of trait entities
+    
+    # We will have one plot per site 
+    Traits_abundances_plot <- lapply(unique(Site_trait_cat_abundances$Site), function(x){
+      # We filter the data frame to keep only the data for the site x
+      Site_trait_cat_abundances_temp <- Site_trait_cat_abundances %>% 
+        filter(Site == x)
       
+      # We then iterate threw each Trait
+      Trait_abundances_plot <- lapply(unique(Site_trait_cat_abundances_temp$Trait), function(y){
+        
+        
+        #We filter the data frame to keep only the data for the trait y
+        Site_trait_cat_abundances_temp2 <- Site_trait_cat_abundances_temp %>% 
+          filter(Trait == y) %>% 
+          mutate(Year = extract_year(Condition))
+        
+        # Retrieve the number of trait entities
+        n_trait <- length(unique(Site_trait_cat_abundances_temp2$Value))
+        # Based on the number of trait entities we select the corresponding color palette
+        colors <- data_palette[1: n_trait,]
+        
+        # We plot the relative abundances of the trait categories in each site face to the chosen condition
+        Trait_abundances_plot <- ggplot(Site_trait_cat_abundances_temp2, aes(x = Year, y = Abundance, fill = Value))+
+          geom_bar(stat = "identity")+
+          theme_classic() +
+          theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+          theme(panel.border = element_rect(colour = "black", fill = NA)) +
+          theme(axis.text = element_text(face = "bold", size = 12)) +
+          theme(axis.title = element_text(face = "bold")) +
+          theme(axis.line = element_line(color = "black", linewidth = 0.5, linetype = "solid")) +
+          scale_fill_manual(values = colors$Value) +
+          theme(axis.title.x= element_blank())+
+          labs(y = "Relative abundance",
+               title = as.name(y))+
+          theme(plot.title = element_text(hjust = 0.5, size = 14, face = "bold"))
+        return(Trait_abundances_plot)
+      })
       
-      #We filter the data frame to keep only the data for the trait y
-      Site_trait_cat_abundances_temp2 <- Site_trait_cat_abundances_temp %>% 
-        filter(Trait == y) %>% 
-        mutate(Year = extract_year(Condition))
+      # For each element we add the morphological trait category name to the list 
+      names(Trait_abundances_plot) <- unique(Site_trait_cat_abundances_temp$Trait)
       
-      # Retrieve the number of trait entities
-      n_trait <- length(unique(Site_trait_cat_abundances_temp2$Value))
-      # Based on the number of trait entities we select the corresponding color palette
-      colors <- data_palette[1: n_trait,]
+      # We can plot all the trait categories in the same plot (one per site)
+      Trait_abundances_plot_all <- do.call(grid.arrange,Trait_abundances_plot)
       
-      # We plot the relative abundances of the trait categories in each site face to the chosen condition
-      Trait_abundances_plot <- ggplot(Site_trait_cat_abundances_temp2, aes(x = Year, y = Abundance, fill = Value))+
-        geom_bar(stat = "identity")+
-        theme_classic() +
-        theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-        theme(panel.border = element_rect(colour = "black", fill = NA)) +
-        theme(axis.text = element_text(face = "bold", size = 12)) +
-        theme(axis.title = element_text(face = "bold")) +
-        theme(axis.line = element_line(color = "black", linewidth = 0.5, linetype = "solid")) +
-        scale_fill_manual(values = colors$Value) +
-        theme(axis.title.x= element_blank())+
-        labs(y = "Relative abundance",
-             title = as.name(y))+
-        theme(plot.title = element_text(hjust = 0.5, size = 14, face = "bold"))
-      return(Trait_abundances_plot)
-    })
+      return(Trait_abundances_plot_all)
+      
+    }) # eo lapply
     
-    # For each element we add the morphological trait category name to the list 
-    names(Trait_abundances_plot) <- unique(Site_trait_cat_abundances_temp$Trait)
-    
-    # We can plot all the trait categories in the same plot (one per site)
-    Trait_abundances_plot_all <- do.call(grid.arrange,Trait_abundances_plot)
-    
-    return(Trait_abundances_plot_all)
-    
-  }) # eo lapply
-  
-  # add the site name to the list
-  names(Traits_abundances_plot) <- unique(Site_trait_cat_abundances$Site)
+    # add the site name to the list
+    names(Traits_abundances_plot) <- unique(Site_trait_cat_abundances$Site)
   } else {
     Traits_abundances_plot = NA
   }
   
   # We can return results in a list
-  return(list(FI_plot = FI_plot ,Plot_FI_all_years = Plot_FI_all_years , PERMANOVA_test_df = PERMANOVA_test_df, Traits_abundances = Plot_Traits_abundances_all_sites))
+  return(list(FI_plot = FI_plot ,Plot_FI_all_years = Plot_FI_all_years , PERMANOVA_test_df = PERMANOVA_test_df, Traits_abundances = Traits_abundances_plot))
   
 } # eo function
 

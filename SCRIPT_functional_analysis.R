@@ -18,9 +18,9 @@ setwd("C:/Users/.../YourFolder") # Please enter the path to your folder
 
 ##### Load dataset ##### 
 # Please enter your data file names
-Functional_Entities <- read.csv2("./Functional_Entities.csv", sep=";", dec=",", row.names=1)# Load information about species and their functional traits
-Abundance_data <- read.csv2("./Abundance_data.csv", sep=";", dec=",", row.names=1)# Load information about the abundances of the species in different samples (e.g. quadrats)
-Sample_metadata <- read.csv2("Sample_metadata.csv", sep=";", dec=",", row.names=1) # Load information about the samples (e.g. location, site, year, treatment, etc.)
+Functional_Entities <- read.csv2("./Functional_Entities.csv", sep=",", dec=".")# Load information about species and their functional traits
+Abundance_data <- read.csv2("./Abundance_data.csv", sep=",", dec=".", row.names=1)# Load information about the abundances of the species in different samples (e.g. quadrats)
+Sample_metadata <- read.csv2("Sample_metadata.csv", sep=",", dec=".") # Load information about the samples (e.g. location, site, year, treatment, etc.)
   
 ##### Load Functions ####
 # CAREFUL : The functions scripts need to be in the same folder as this script
@@ -45,51 +45,70 @@ gower <- Functional_space$gower
 fit <- Functional_space$fit
 
 #### Data Analysis ####
-##### Define your argments ##### 
+##### 1. Define your argments ##### 
 # In order to perform the analysis, you need to define the arguments of the function based on your datasets. 
 
 condition_column <- "Year" # Please enter the name of the column in the Sample_metadata file that contain the condition you want to compare (e.g. Year, Site, Treatment, etc.)
 
-
-colors <- 
-edges_colors <-
+colors <- c("Pzzu_cor_2003" = "#CD2626",
+            "Pzzu_cor_2011" = "#F9D71C", 
+            "Pzzu_cor_2018" = "#3A5FCD",
+            "Pzzu_par_2006" = "#CD2626",
+            "Pzzu_par_2011" = "#F9D71C",
+            "Pzzu_par_2018" = "#3A5FCD",
+            "Gabin_par_1999" = "#CD2626",
+            "Gabin_par_2007" = "#F9D71C", 
+            "Gabin_par_2009" ="#3A5FCD",
+            "Pzzinu_par_2006" = "#CD2626",
+            "Pzzinu_par_2011" = "#F9D71C",
+            "Pzzinu_par_2016" ="#3A5FCD", 
+            "Passe_cor_2006" = "#CD2626",
+            "Passe_cor_2011" = "#F9D71C",
+            "Passe_cor_2018"= "#3A5FCD")
+edges_colors <- c("Pzzu_cor_2003" = "#CD2626",
+                  "Pzzu_cor_2011" = "#F9D71C", 
+                  "Pzzu_cor_2018" = "#3A5FCD",
+                  "Pzzu_par_2006" = "#CD2626",
+                  "Pzzu_par_2011" = "#F9D71C",
+                  "Pzzu_par_2018" = "#3A5FCD",
+                  "Gabin_par_1999" = "#CD2626",
+                  "Gabin_par_2007" = "#F9D71C", 
+                  "Gabin_par_2009" ="#3A5FCD",
+                  "Pzzinu_par_2006" = "#CD2626",
+                  "Pzzinu_par_2011" = "#F9D71C",
+                  "Pzzinu_par_2016" ="#3A5FCD", 
+                  "Passe_cor_2006" = "#CD2626",
+                  "Passe_cor_2011" = "#F9D71C",
+                  "Passe_cor_2018"= "#3A5FCD")
+cluster_colors <- c("1"= "black", 
+                    "2" = "red",
+                    "3" = "green", 
+                    "4" = "yellow", 
+                    "5" = "#66FFFF",
+                    "6" = "cadetblue",
+                    "7" = "orange", 
+                    "8" = "purple")
+  
 layout <- "column" # Choose your layout : "column" or "row" as needed (visualisation of different conditions in columns or rows)
 
-##### Run functional analysis #####
-###### Functional Richness in Functional Space ######
+##### 2. Run functional analysis #####
+###### Functional Richness in Functional Space ###### 
 # Launch function
 Frich_in_Functionnal_space <- frich_in_functionnal_space(Site_Data = Sample_metadata,
                                                          Fonctional_diversity_coord = fd.coord,
                                                          Species_Functional_Entities = Functional_Entities,
                                                          Abundance_matrix = Abundance_data,
-                                                         condition_column = "Year",
+                                                         condition_column = condition_column,
                                                          colors = colors,
                                                          edges_colors = edges_colors, 
-                                                         layout = "column")
-
-# Pass results to workspace
-Frich_plots <- Frich_in_Functionnal_space$Frich_plots
-hull_df_global <- Frich_in_Functionnal_space$hull_df_global
-conditions <- Frich_in_Functionnal_space$conditions
-ab.conditions <- Frich_in_Functionnal_space$ab.conditions
-
-###### Functional Richness in Functional Space ###### 
-# Launch function
-Frich_in_Functionnal_space <- frich_in_functionnal_space(Site_Data = sites,
-                                                         Fonctional_diversity_coord = fd.coord,
-                                                         Species_Functional_Entities = FES,
-                                                         Abundance_matrix = ab,
-                                                         condition_column = "Year",
-                                                         colors = colors,
-                                                         edges_colors = Edges_colors, 
-                                                         layout = "column", 
+                                                         layout = layout, 
                                                          compute_null_hypothesis = TRUE,
                                                          n_perm = 100)
 
 # Pass results to workspace
-Frich_in_space <- Functionnal_rich[[1]]
+Frich_in_space <- Frich_in_Functionnal_space[[1]]
 plot(Frich_in_space)
-Null_Frich <- Functionnal_rich[[2]]
+Null_Frich <- Frich_in_Functionnal_space[[2]]
 plot(Null_Frich)
 
 # Save results 
@@ -102,33 +121,61 @@ ggsave("Frich_Plots.jpeg", Frich_in_space, width = 40, height = 20, units = "cm"
 ggsave("Frich_Plots_Sites.svg", Null_Frich, width = 40, height = 5, units = "cm")
 ggsave("Frich_Plots_Sites.jpeg", Null_Frich, width = 40, height = 5, units = "cm")
 
+###### Traits in functional Space (vector and organisation) ######
+# Launch function
+space_traits <- space_traits(Fonctional_diversity_coord = fd.coord,
+                             Species_functionnal_traits = Functional_Entities,
+                             gower = gower,
+                             fit = fit)
+
+# Pass results to workspace
+pcoa_vector_plot <- space_traits$pcoa_vector_plot
+Factorial_plots <- space_traits$Factorial_plots
+
+# Display results
+plot(pcoa_vector_plot)
+plot(Factorial_plots)
+
+# Save results
+# In .SVG and .jpeg format (choose the format you want)
+# Dimensions are set for the example, please specify dimension for your own dataset
+
+# For the vector direction and traits in functional space
+ggsave("FES_Traits_Vectors.svg", pcoa_vector_plot, width = 20, height = 20, units = "cm")
+ggsave("FES_Traits_Vectors.jpeg", pcoa_vector_plot, width = 20, height = 20, units = "cm")
+# For the categories positions in functional space
+ggsave("FES_Traits_Categories.svg", Factorial_plots, width = 40, height = 20, units = "cm")
+ggsave("FES_Traits_Categories.jpeg", Factorial_plots , width = 40, height = 20, units = "cm")
+
 
 ###### Trait distribution in Functional space ######
 # Launch function
-FI_analysis <- abund_traits_distribution(Site_Data = sites,
-                                         condition_column = "Year",
-                                         Abundance_matrix = ab,
-                                         colors = colors,
-                                         edges_colors = colors,
-                                         Species_Functional_Entities = FES ,
-                                         Fonctional_diversity_coord = fd.coord,
-                                         threshold = 0, 
-                                         layout = "column",
-                                         all_in_one = TRUE, 
-                                         PERMANOVA = TRUE, 
-                                         n_perm = 9999,
-                                         n_dim = 4, 
-                                         trait_relative_abundances = TRUE)
+traits_distribution <- traits_distribution(Site_Data = Sample_metadata,
+                                   condition_column = condition_column,
+                                   Abundance_matrix = Abundance_data,
+                                   colors = colors,
+                                   edges_colors = colors,
+                                   Species_Functional_Entities = Functional_Entities ,
+                                   Fonctional_diversity_coord = fd.coord,
+                                   threshold = 0, 
+                                   layout = layout,
+                                   all_in_one = TRUE, 
+                                   PERMANOVA = TRUE, 
+                                   n_perm = 9999,
+                                   n_dim = 4, 
+                                   trait_relative_abundances = TRUE)
 
 # Pass results to workspace
-FI_plot <- FI_analysis$FI_plot
-Plot_FI_all_years <- FI_analysis$Plot_FI_all_years
-PERMANOVA_test_df <- FI_analysis$PERMANOVA_test_df
+FI_plot <- traits_distribution$FI_plot
+Plot_FI_all_years <- traits_distribution$Plot_FI_all_years
+PERMANOVA_test_df <- traits_distribution$PERMANOVA_test_df
+Traits_abundances <- traits_distribution$Traits_abundances
 
 # Display results
 plot(FI_plot)
 plot(Plot_FI_all_years)
 PERMANOVA_test_df
+lapply(Traits_abundances, plot)# For each eleemnt of the list display the results
 
 # Save results 
 # In .SVG and .jpeg format (choose the format you want)
@@ -143,14 +190,17 @@ ggsave("Plot_FI_all_years.png", plot = Plot_FI_all_years, device = "png", width 
 require('writexl')
 write_xlsx(PERMANOVA_test_df,"PERMANOVA_results.xlsx")
 
+# The last element is a list of plots, that we can save using 
+lapply(Traits_abundances, function(x) ggsave(paste0(names(x),".svg"), x, device = "svg", width = 40, height = 20, units = "cm"))
+
 ###### Functional traits clustering ######
 # Launch function
 Functionnal_clusters <- functionnal_clustering(gower = gower,
                                                Cluster_limit = 20,
                                                Fonctional_diversity_coord = fd.coord,
-                                               Species_Functional_Entities = spe_fes,
-                                               Data_site = sites,
-                                               Colors = Cluster_colors, 
+                                               Species_Functional_Entities = Functional_Entities,
+                                               Site_Data = Sample_metadata,
+                                               Colors = cluster_colors, 
                                                Title ="Global")
 
 # Pass results to workspace
