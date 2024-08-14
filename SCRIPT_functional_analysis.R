@@ -18,9 +18,9 @@ setwd("C:/Users/.../YourFolder") # Please enter the path to your folder
 
 ##### Load dataset ##### 
 # Please enter your data file names
-Functional_Entities <- read.csv2("./Functional_Entities.csv", sep=",", dec=".")# Load information about species and their functional traits
-Abundance_data <- read.csv2("./Abundance_data.csv", sep=",", dec=".", row.names=1)# Load information about the abundances of the species in different samples (e.g. quadrats)
-Sample_metadata <- read.csv2("Sample_metadata.csv", sep=",", dec=".") # Load information about the samples (e.g. location, site, year, treatment, etc.)
+Functional_Entities <- read.csv2("./Functional_Entities_TE.csv", sep=",", dec=".")# Load information about species and their functional traits
+Abundance_data <- read.csv2("./Abundance_data_TE.csv", sep=",", dec=".", row.names=1)# Load information about the abundances of the species in different samples (e.g. quadrats)
+Sample_metadata <- read.csv2("Sample_metadata_TE.csv", sep=",", dec=".") # Load information about the samples (e.g. location, site, year, treatment, etc.)
   
 ##### Load Functions ####
 # CAREFUL : The functions scripts need to be in the same folder as this script
@@ -50,36 +50,57 @@ fit <- Functional_space$fit
 
 condition_column <- "Year" # Please enter the name of the column in the Sample_metadata file that contain the condition you want to compare (e.g. Year, Site, Treatment, etc.)
 
-colors <- c("Pzzu_cor_2003" = "#CD2626",
-            "Pzzu_cor_2011" = "#F9D71C", 
-            "Pzzu_cor_2018" = "#3A5FCD",
-            "Pzzu_par_2006" = "#CD2626",
-            "Pzzu_par_2011" = "#F9D71C",
-            "Pzzu_par_2018" = "#3A5FCD",
-            "Gabin_par_1999" = "#CD2626",
-            "Gabin_par_2007" = "#F9D71C", 
-            "Gabin_par_2009" ="#3A5FCD",
-            "Pzzinu_par_2006" = "#CD2626",
-            "Pzzinu_par_2011" = "#F9D71C",
-            "Pzzinu_par_2016" ="#3A5FCD", 
-            "Passe_cor_2006" = "#CD2626",
-            "Passe_cor_2011" = "#F9D71C",
-            "Passe_cor_2018"= "#3A5FCD")
-edges_colors <- c("Pzzu_cor_2003" = "#CD2626",
-                  "Pzzu_cor_2011" = "#F9D71C", 
-                  "Pzzu_cor_2018" = "#3A5FCD",
-                  "Pzzu_par_2006" = "#CD2626",
-                  "Pzzu_par_2011" = "#F9D71C",
-                  "Pzzu_par_2018" = "#3A5FCD",
-                  "Gabin_par_1999" = "#CD2626",
-                  "Gabin_par_2007" = "#F9D71C", 
-                  "Gabin_par_2009" ="#3A5FCD",
-                  "Pzzinu_par_2006" = "#CD2626",
-                  "Pzzinu_par_2011" = "#F9D71C",
-                  "Pzzinu_par_2016" ="#3A5FCD", 
-                  "Passe_cor_2006" = "#CD2626",
-                  "Passe_cor_2011" = "#F9D71C",
-                  "Passe_cor_2018"= "#3A5FCD")
+colors <- c("Grotte_Perez_2023" = "#CD2626", 
+            "Montremian_2023" = "#CD2626",
+            "Petit_Congloue_2023" = "#CD2626",
+            "Palazzu_25m_2016" = "#3A5FCD",
+            "Palazzu_25m_2023" = "#CD2626",
+            "Palazzinu_25m_2006" ="#F9D71C" ,
+            "Palazzinu_25m_2011" = "#33CC33",
+            "Palazzinu_25m_2016" = "#3A5FCD",
+            "Palazzinu_25m_2023" = "#CD2626")
+edges_colors <- c("Grotte_Perez_2023" = "#CD2626", 
+                  "Montremian_2023" = "#CD2626",
+                  "Petit_Congloue_2023" = "#CD2626",
+                  "Palazzu_25m_2016" = "#3A5FCD",
+                  "Palazzu_25m_2023" = "#CD2626",
+                  "Palazzinu_25m_2006" ="#F9D71C" ,
+                  "Palazzinu_25m_2011" = "#33CC33",
+                  "Palazzinu_25m_2016" = "#3A5FCD",
+                  "Palazzinu_25m_2023" = "#CD2626")  
+  
+# colors<- c("Pzzu_cor_2003" = "#CD2626",
+#            "Pzzu_cor_2011" = "#F9D71C", 
+#            "Pzzu_cor_2018" = "#3A5FCD",
+#            "Pzzu_par_2006" = "#CD2626",
+#            "Pzzu_par_2011" = "#F9D71C",
+#            "Pzzu_par_2018" = "#3A5FCD",
+#            "Gabin_par_1999" = "#CD2626",
+#            "Gabin_par_2007" = "#F9D71C", 
+#            "Gabin_par_2009" ="#3A5FCD",
+#            "Pzzinu_par_2006" = "#CD2626",
+#            "Pzzinu_par_2011" = "#F9D71C",
+#            "Pzzinu_par_2016" ="#3A5FCD", 
+#            "Passe_cor_2006" = "#CD2626",
+#            "Passe_cor_2011" = "#F9D71C",
+#            "Passe_cor_2018"= "#3A5FCD")
+# edges_colors <- c("Pzzu_cor_2003" = "#CD2626",
+#                   "Pzzu_cor_2011" = "#F9D71C", 
+#                   "Pzzu_cor_2018" = "#3A5FCD",
+#                   "Pzzu_par_2006" = "#CD2626",
+#                   "Pzzu_par_2011" = "#F9D71C",
+#                   "Pzzu_par_2018" = "#3A5FCD",
+#                   "Gabin_par_1999" = "#CD2626",
+#                   "Gabin_par_2007" = "#F9D71C", 
+#                   "Gabin_par_2009" ="#3A5FCD",
+#                   "Pzzinu_par_2006" = "#CD2626",
+#                   "Pzzinu_par_2011" = "#F9D71C",
+#                   "Pzzinu_par_2016" ="#3A5FCD", 
+#                   "Passe_cor_2006" = "#CD2626",
+#                   "Passe_cor_2011" = "#F9D71C",
+#                   "Passe_cor_2018"= "#3A5FCD")
+
+Cluster_limit <- 20
 cluster_colors <- c("1"= "black", 
                     "2" = "red",
                     "3" = "green", 
@@ -87,7 +108,19 @@ cluster_colors <- c("1"= "black",
                     "5" = "#66FFFF",
                     "6" = "cadetblue",
                     "7" = "orange", 
-                    "8" = "purple")
+                    "8" = "purple", 
+                    "9" = "brown",
+                    "10" = "blue",
+                    "11" = "pink",
+                    "12" = "grey",
+                    "13" = "darkgreen",
+                    "14" = "darkred",
+                    "15" = "darkblue",
+                    "16" = "darkorange",
+                    "17" = "orange4",
+                    "18" = "grey20",
+                    "19" = "magenta", 
+                    "20" = "coral")
   
 layout <- "column" # Choose your layout : "column" or "row" as needed (visualisation of different conditions in columns or rows)
 
@@ -132,10 +165,6 @@ space_traits <- space_traits(Fonctional_diversity_coord = fd.coord,
 pcoa_vector_plot <- space_traits$pcoa_vector_plot
 Factorial_plots <- space_traits$Factorial_plots
 
-# Display results
-plot(pcoa_vector_plot)
-plot(Factorial_plots)
-
 # Save results
 # In .SVG and .jpeg format (choose the format you want)
 # Dimensions are set for the example, please specify dimension for your own dataset
@@ -155,7 +184,7 @@ traits_distribution <- traits_distribution(Site_Data = Sample_metadata,
                                    Abundance_matrix = Abundance_data,
                                    colors = colors,
                                    edges_colors = colors,
-                                   Species_Functional_Entities = Functional_Entities ,
+                                   Species_Functional_Entities = Functional_Entities,
                                    Fonctional_diversity_coord = fd.coord,
                                    threshold = 0, 
                                    layout = layout,
@@ -169,36 +198,42 @@ traits_distribution <- traits_distribution(Site_Data = Sample_metadata,
 FI_plot <- traits_distribution$FI_plot
 Plot_FI_all_years <- traits_distribution$Plot_FI_all_years
 PERMANOVA_test_df <- traits_distribution$PERMANOVA_test_df
-Traits_abundances <- traits_distribution$Traits_abundances
+Trait_abundances <- traits_distribution$Trait_abundances
 
 # Display results
 plot(FI_plot)
 plot(Plot_FI_all_years)
 PERMANOVA_test_df
-lapply(Traits_abundances, plot)# For each eleemnt of the list display the results
+lapply(Trait_abundances, plot)# For each eleemnt of the list display the results
 
 # Save results 
 # In .SVG and .jpeg format (choose the format you want)
 # Dimensions are set for the example, please specify dimension for your own dataset
 ggsave("FI_plot.svg", plot = FI_plot, device = "svg", width = 40, height = 20, units = "cm")
-ggsave("FI_plot.png", plot = FI_plot, device = "png", width = 40, height = 20, units = "cm")
+ggsave("FI_plot.jpeg", plot = FI_plot, device = "jpeg", width = 40, height = 20, units = "cm")
 
 ggsave("Plot_FI_all_years.svg", plot = Plot_FI_all_years, device = "svg", width = 40, height = 10, units = "cm")
-ggsave("Plot_FI_all_years.png", plot = Plot_FI_all_years, device = "png", width = 40, height = 10, units = "cm")
+ggsave("Plot_FI_all_years.jpeg", plot = Plot_FI_all_years, device = "jpeg", width = 40, height = 10, units = "cm")
 
 #install.packages('writexl') # Uncomment if you don't have the package installed
 require('writexl')
 write_xlsx(PERMANOVA_test_df,"PERMANOVA_results.xlsx")
 
 # The last element is a list of plots, that we can save using 
-lapply(Traits_abundances, function(x) ggsave(paste0(names(x),".svg"), x, device = "svg", width = 40, height = 20, units = "cm"))
+
+lapply(1:length(Trait_abundances), function(x){
+  title <- names(Trait_abundances[x])
+  plot <- Trait_abundances[[x]]
+  ggsave(paste0(title,"_Trait_abundances.svg"), plot, device = "svg", width = 40, height = 30, units = "cm")
+})
 
 ###### Functional traits clustering ######
 # Launch function
 Functionnal_clusters <- functionnal_clustering(gower = gower,
-                                               Cluster_limit = 20,
+                                               Cluster_limit = Cluster_limit,
                                                Fonctional_diversity_coord = fd.coord,
                                                Species_Functional_Entities = Functional_Entities,
+                                               Abundance_matrix = Abundance_data,
                                                Site_Data = Sample_metadata,
                                                Colors = cluster_colors, 
                                                Title ="Global")
@@ -217,19 +252,19 @@ Tab_Site_cluster_abundances <- Functionnal_clusters$Tab_Site_cluster_abundances
 
 # Global clustering 
 ggsave("Cluster_plot.svg", plot = Cluster_plot, device = "svg", width = 20, height = 20, units = "cm")
-ggsave("Cluster_plot.png", plot = Cluster_plot, device = "png", width = 20, height = 20, units = "cm")
+ggsave("Cluster_plot.jpeg", plot = Cluster_plot, device = "jpeg", width = 20, height = 20, units = "cm")
 
 # Clustering by Site
 ggsave("Sites_functionnal_cluster.svg", plot = Sites_functionnal_cluster, device = "svg", width = 40, height = 10, units = "cm")
-ggsave("Sites_functionnal_cluster.png", plot = Sites_functionnal_cluster, device = "png", width = 40, height = 10, units = "cm")
+ggsave("Sites_functionnal_cluster.jpeg", plot = Sites_functionnal_cluster, device = "jpeg", width = 40, height = 10, units = "cm")
 
 # Number of species per cluster in each site 
 ggsave("Sites_functionnal_Abundance.svg", plot = Sites_functionnal_Abundance, device = "svg", width = 40, height = 10, units = "cm")
-ggsave("Sites_functionnal_Abundance.png", plot = Sites_functionnal_Abundance, device = "png", width = 40, height = 10, units = "cm")
+ggsave("Sites_functionnal_Abundance.jpeg", plot = Sites_functionnal_Abundance, device = "jpeg", width = 40, height = 10, units = "cm")
 
 # Abundances of each cluster
 ggsave("Sites_Functionnal_Clusters_abundances.svg", plot = Sites_Functionnal_Clusters_abundances, device = "svg", width = 40, height = 10, units = "cm")
-ggsave("Sites_Functionnal_Clusters_abundances.png", plot = Sites_Functionnal_Clusters_abundances, device = "png", width = 40, height = 10, units = "cm")
+ggsave("Sites_Functionnal_Clusters_abundances.jpeg", plot = Sites_Functionnal_Clusters_abundances, device = "jpeg", width = 40, height = 10, units = "cm")
 
 # Table of abundances of each cluster
 write_xlsx(Tab_Site_cluster_abundances,"Tab_Site_cluster_abundances.xlsx")
