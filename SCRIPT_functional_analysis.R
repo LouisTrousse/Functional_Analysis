@@ -21,7 +21,19 @@ setwd("C:/Users/.../YourFolder") # Please enter the path to your folder
 Functional_Entities <- read.csv2("./Functional_Entities_TE.csv", sep=",", dec=".")# Load information about species and their functional traits
 Abundance_data <- read.csv2("./Abundance_data_TE.csv", sep=",", dec=".", row.names=1)# Load information about the abundances of the species in different samples (e.g. quadrats)
 Sample_metadata <- read.csv2("Sample_metadata_TE.csv", sep=",", dec=".") # Load information about the samples (e.g. location, site, year, treatment, etc.)
+
+
+# Filter Sample Metadata to keep only Pallazu and Pallazinu 
+Sample_metadata <- Sample_metadata[Sample_metadata$Site %in% c("Palazzinu_25m", "Palazzu_25m"),]
+# Filter Abundances data set to keep Pallazinu and Pallazu samples
+Abundance_data <- Abundance_data[rownames(Abundance_data) %in% Sample_metadata$Quadrat,] %>% 
+  # Filter to keep only species present in both datasets with a minimum of 0% of abundance
+  select(which(colSums(Abundance_data) > 0))
   
+
+# Merge Abundance data and Functional Entities to keep only species present in both datasets
+Functional_Entities <- Functional_Entities[Functional_Entities$Species %in% colnames(Abundance_data),]
+
 ##### Load Functions ####
 # CAREFUL : The functions scripts need to be in the same folder as this script
 source("functionalanalysis.R")
@@ -50,18 +62,18 @@ fit <- Functional_space$fit
 
 condition_column <- "Year" # Please enter the name of the column in the Sample_metadata file that contain the condition you want to compare (e.g. Year, Site, Treatment, etc.)
 
-colors <- c("Grotte_Perez_2023" = "#CD2626", 
-            "Montremian_2023" = "#CD2626",
-            "Petit_Congloue_2023" = "#CD2626",
+colors <- c(#"Grotte_Perez_2023" = "#CD2626", 
+            #"Montremian_2023" = "#CD2626",
+            #"Petit_Congloue_2023" = "#CD2626",
             "Palazzu_25m_2016" = "#3A5FCD",
             "Palazzu_25m_2023" = "#CD2626",
             "Palazzinu_25m_2006" ="#F9D71C" ,
             "Palazzinu_25m_2011" = "#33CC33",
             "Palazzinu_25m_2016" = "#3A5FCD",
             "Palazzinu_25m_2023" = "#CD2626")
-edges_colors <- c("Grotte_Perez_2023" = "#CD2626", 
-                  "Montremian_2023" = "#CD2626",
-                  "Petit_Congloue_2023" = "#CD2626",
+edges_colors <- c(#"Grotte_Perez_2023" = "#CD2626", 
+                  #"Montremian_2023" = "#CD2626",
+                  #"Petit_Congloue_2023" = "#CD2626",
                   "Palazzu_25m_2016" = "#3A5FCD",
                   "Palazzu_25m_2023" = "#CD2626",
                   "Palazzinu_25m_2006" ="#F9D71C" ,
@@ -140,9 +152,7 @@ Frich_in_Functionnal_space <- frich_in_functionnal_space(Site_Data = Sample_meta
 
 # Pass results to workspace
 Frich_in_space <- Frich_in_Functionnal_space[[1]]
-plot(Frich_in_space)
 Null_Frich <- Frich_in_Functionnal_space[[2]]
-plot(Null_Frich)
 
 # Save results 
 # In .SVG and .jpeg format (choose the format you want)
@@ -268,10 +278,6 @@ ggsave("Sites_Functionnal_Clusters_abundances.jpeg", plot = Sites_Functionnal_Cl
 
 # Table of abundances of each cluster
 write_xlsx(Tab_Site_cluster_abundances,"Tab_Site_cluster_abundances.xlsx")
-
-
-
-
 
 
 
