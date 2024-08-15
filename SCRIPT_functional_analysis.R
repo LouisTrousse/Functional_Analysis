@@ -134,8 +134,8 @@ cluster_colors <- c("1"= "black",
 
 ###### Functional Richness in Functional Space ###### 
 # Launch function
-Frich_in_Functional_space <- frich_in_Functional_space(Site_Data = Sample_metadata,
-                                                         Fonctional_diversity_coord = fd.coord,
+Frich_in_Functional_space <- frich_in_functional_space(Site_Data = Sample_metadata,
+                                                         Functional_diversity_coord = fd.coord,
                                                          Species_Functional_Entities = Functional_Entities,
                                                          Abundance_matrix = Abundance_data,
                                                          condition_column = condition_column,
@@ -161,7 +161,7 @@ ggsave("Frich_Plots_Sites.jpeg", Null_Frich, width = 40, height = 5, units = "cm
 
 ###### Traits in functional Space (vector and organisation) ######
 # Launch function
-space_traits <- space_traits(Fonctional_diversity_coord = fd.coord,
+space_traits <- space_traits(Functional_diversity_coord = fd.coord,
                              Species_functional_traits = Functional_Entities,
                              gower = gower,
                              fit = fit)
@@ -190,7 +190,7 @@ traits_distribution <- traits_distribution(Site_Data = Sample_metadata,
                                    colors = colors,
                                    edges_colors = colors,
                                    Species_Functional_Entities = Functional_Entities,
-                                   Fonctional_diversity_coord = fd.coord,
+                                   Functional_diversity_coord = fd.coord,
                                    threshold = 0, 
                                    layout = layout,
                                    all_in_one = TRUE, 
@@ -204,12 +204,6 @@ FI_plot <- traits_distribution$FI_plot
 Plot_FI_all_years <- traits_distribution$Plot_FI_all_years
 PERMANOVA_test_df <- traits_distribution$PERMANOVA_test_df
 Trait_abundances <- traits_distribution$Trait_abundances
-
-# Display results
-plot(FI_plot)
-plot(Plot_FI_all_years)
-PERMANOVA_test_df
-lapply(Trait_abundances, plot)# For each eleemnt of the list display the results
 
 # Save results 
 # In .SVG and .jpeg format (choose the format you want)
@@ -237,7 +231,7 @@ lapply(1:length(Trait_abundances), function(x){
 # Launch function
 Functional_clusters <- functional_clustering(gower = gower,
                                                Cluster_limit = Cluster_limit,
-                                               Fonctional_diversity_coord = fd.coord,
+                                               Functional_diversity_coord = fd.coord,
                                                Species_Functional_Entities = Functional_Entities,
                                                Abundance_matrix = Abundance_data,
                                                Site_Data = Sample_metadata,
