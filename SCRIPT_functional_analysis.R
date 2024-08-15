@@ -1,5 +1,5 @@
 # Author : Troussé Louis
-# Created : 2024-07-30
+# Created : 2024-08-15
 # Affiliation : Septentrion Environnement
 
 #### Foreword ####
@@ -14,7 +14,7 @@
 
 #### Data Importation ####
 # Please set the working directory to the folder containing your data files. Ensure that the data files are in the same folder as this script and the scripts containing the different functions.
-setwd("C:/Users/.../YourFolder") # Please enter the path to your folder
+setwd("/YourFolder") # Please enter the path to your folder
 
 ##### Load dataset ##### 
 # Please enter your data file names
@@ -22,23 +22,24 @@ Functional_Entities <- read.csv2("./Functional_Entities_TE.csv", sep=",", dec=".
 Abundance_data <- read.csv2("./Abundance_data_TE.csv", sep=",", dec=".", row.names=1)# Load information about the abundances of the species in different samples (e.g. quadrats)
 Sample_metadata <- read.csv2("Sample_metadata_TE.csv", sep=",", dec=".") # Load information about the samples (e.g. location, site, year, treatment, etc.)
 
-
-# Filter Sample Metadata to keep only Pallazu and Pallazinu 
-Sample_metadata <- Sample_metadata[Sample_metadata$Site %in% c("Palazzinu_25m", "Palazzu_25m"),]
-# Filter Abundances data set to keep Pallazinu and Pallazu samples
-Abundance_data <- Abundance_data[rownames(Abundance_data) %in% Sample_metadata$Quadrat,] %>% 
-  # Filter to keep only species present in both datasets with a minimum of 0% of abundance
-  select(which(colSums(Abundance_data) > 0))
-  
-
-# Merge Abundance data and Functional Entities to keep only species present in both datasets
-Functional_Entities <- Functional_Entities[Functional_Entities$Species %in% colnames(Abundance_data),]
-
 ##### Load Functions ####
 # CAREFUL : The functions scripts need to be in the same folder as this script
 source("functionalanalysis.R")
 
 #### Data Preprocessing ####
+##### Data Filtering #####
+# These steps are not mandatory but by filtering the data you can choose the site you want to analyse, the species you want to keep, etc.
+
+# Filter the data based on the metadata
+# Filter Sample Metadata to keep only Pallazu and Pallazinu 
+Sample_metadata <- Sample_metadata[Sample_metadata$Site %in% c("Palazzinu_25m", "Palazzu_25m"),]
+# Filter Abundances data set to keep Pallazinu and Pallazu samples
+Abundance_data <- Abundance_data[rownames(Abundance_data) %in% Sample_metadata$Quadrat,] %>%
+  select(which(colSums(Abundance_data) > 0)) #Filter to keep only present taxa
+
+# Keep present Functional Entities
+Functional_Entities <- Functional_Entities[Functional_Entities$Species %in% colnames(Abundance_data),]
+
 ##### Functionnal Space ##### 
 # CAREFUL : This function need your intervention to choose the number of dimensions to keep. Please enter the number of dimensions you want to keep in the console when asked. 
 # The mean squared_deviation index is display and will help you to choose the number of dimensions to keep.
@@ -60,59 +61,33 @@ fit <- Functional_space$fit
 ##### 1. Define your argments ##### 
 # In order to perform the analysis, you need to define the arguments of the function based on your datasets. 
 
+###### Conditions ######
+# Condition to compare among samples sites.
 condition_column <- "Year" # Please enter the name of the column in the Sample_metadata file that contain the condition you want to compare (e.g. Year, Site, Treatment, etc.)
 
-colors <- c(#"Grotte_Perez_2023" = "#CD2626", 
-            #"Montremian_2023" = "#CD2626",
-            #"Petit_Congloue_2023" = "#CD2626",
-            "Palazzu_25m_2016" = "#3A5FCD",
+###### Visual parameters ######
+# Layout of the plots : Compare different conditions in columns or rows
+layout <- "column" # Choose your layout : "column" or "row" as needed (visualisation of different conditions in columns or rows)
+
+# Colors for the different conditions
+colors <- c("Palazzu_25m_2016" = "#3A5FCD",
             "Palazzu_25m_2023" = "#CD2626",
             "Palazzinu_25m_2006" ="#F9D71C" ,
             "Palazzinu_25m_2011" = "#33CC33",
             "Palazzinu_25m_2016" = "#3A5FCD",
             "Palazzinu_25m_2023" = "#CD2626")
-edges_colors <- c(#"Grotte_Perez_2023" = "#CD2626", 
-                  #"Montremian_2023" = "#CD2626",
-                  #"Petit_Congloue_2023" = "#CD2626",
-                  "Palazzu_25m_2016" = "#3A5FCD",
+edges_colors <- c("Palazzu_25m_2016" = "#3A5FCD",
                   "Palazzu_25m_2023" = "#CD2626",
                   "Palazzinu_25m_2006" ="#F9D71C" ,
                   "Palazzinu_25m_2011" = "#33CC33",
                   "Palazzinu_25m_2016" = "#3A5FCD",
-                  "Palazzinu_25m_2023" = "#CD2626")  
-  
-# colors<- c("Pzzu_cor_2003" = "#CD2626",
-#            "Pzzu_cor_2011" = "#F9D71C", 
-#            "Pzzu_cor_2018" = "#3A5FCD",
-#            "Pzzu_par_2006" = "#CD2626",
-#            "Pzzu_par_2011" = "#F9D71C",
-#            "Pzzu_par_2018" = "#3A5FCD",
-#            "Gabin_par_1999" = "#CD2626",
-#            "Gabin_par_2007" = "#F9D71C", 
-#            "Gabin_par_2009" ="#3A5FCD",
-#            "Pzzinu_par_2006" = "#CD2626",
-#            "Pzzinu_par_2011" = "#F9D71C",
-#            "Pzzinu_par_2016" ="#3A5FCD", 
-#            "Passe_cor_2006" = "#CD2626",
-#            "Passe_cor_2011" = "#F9D71C",
-#            "Passe_cor_2018"= "#3A5FCD")
-# edges_colors <- c("Pzzu_cor_2003" = "#CD2626",
-#                   "Pzzu_cor_2011" = "#F9D71C", 
-#                   "Pzzu_cor_2018" = "#3A5FCD",
-#                   "Pzzu_par_2006" = "#CD2626",
-#                   "Pzzu_par_2011" = "#F9D71C",
-#                   "Pzzu_par_2018" = "#3A5FCD",
-#                   "Gabin_par_1999" = "#CD2626",
-#                   "Gabin_par_2007" = "#F9D71C", 
-#                   "Gabin_par_2009" ="#3A5FCD",
-#                   "Pzzinu_par_2006" = "#CD2626",
-#                   "Pzzinu_par_2011" = "#F9D71C",
-#                   "Pzzinu_par_2016" ="#3A5FCD", 
-#                   "Passe_cor_2006" = "#CD2626",
-#                   "Passe_cor_2011" = "#F9D71C",
-#                   "Passe_cor_2018"= "#3A5FCD")
+                  "Palazzinu_25m_2023" = "#CD2626") 
 
+# Number of clusters to compute during broad clustering step
+# This number is the maximum number of functional clusters that you want to compute. Function will compute the optimal number of clusters based on the data.
 Cluster_limit <- 20
+
+# Colors for the different clusters. If you have more than 20 clusters, please add more colors. If less, only the first clusters colors will be used.
 cluster_colors <- c("1"= "black", 
                     "2" = "red",
                     "3" = "green", 
@@ -133,10 +108,12 @@ cluster_colors <- c("1"= "black",
                     "18" = "grey20",
                     "19" = "magenta", 
                     "20" = "coral")
-  
-layout <- "column" # Choose your layout : "column" or "row" as needed (visualisation of different conditions in columns or rows)
+
 
 ##### 2. Run functional analysis #####
+# In this part, we will run the different functions to analyse the data and display the results. To conduct the analysis, please run the following code. 
+# If needed, some parameters can be changed in this part of the script, but the previous part is the one where you should enter the main parameters. Some export parameters are set to save the results in .svg and .jpeg format, please change the format and the dimensions of the plots as needed.
+
 ###### Functional Richness in Functional Space ###### 
 # Launch function
 Frich_in_Functionnal_space <- frich_in_functionnal_space(Site_Data = Sample_metadata,
@@ -278,11 +255,3 @@ ggsave("Sites_Functionnal_Clusters_abundances.jpeg", plot = Sites_Functionnal_Cl
 
 # Table of abundances of each cluster
 write_xlsx(Tab_Site_cluster_abundances,"Tab_Site_cluster_abundances.xlsx")
-
-
-
-
-
-
-
-
