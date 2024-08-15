@@ -14,7 +14,7 @@
 
 #### Data Importation ####
 # Please set the working directory to the folder containing your data files. Ensure that the data files are in the same folder as this script and the scripts containing the different functions.
-setwd("/YourFolder") # Please enter the path to your folder
+# setwd("/YourFolder") # Please enter the path to your folder (if you are familiar with Rproject, no need to set the working directory, the script will find the data files in the same folder as the script). 
 
 ##### Load dataset ##### 
 # Please enter your data file names
