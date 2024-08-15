@@ -47,7 +47,7 @@ Functional_space <- create_functional_space(mat_funct = Functional_Entities,
                                             metric = "Gower",
                                             dendro = FALSE,
                                             plot = "quality_funct_space",
-                                            output_file = "FE_4D_coord.csv")
+                                            output_file = "FE_coord.csv")
 
 # Pass the output of the function to the workspace
 fd.coord <- Functional_space$fd.coord

@@ -718,6 +718,7 @@ traits_distribution <- function(Site_Data, condition_column, Abundance_matrix, c
   # load necessary packages
   require(tripack)
   require(tidyverse)
+  require(vegan)
   
   #retrieve all the conditions in the dataset
   conditions <- unique(Site_Data[[condition_column]])
@@ -866,6 +867,9 @@ traits_distribution <- function(Site_Data, condition_column, Abundance_matrix, c
   }) #eo lapply
   
   names(FI_plots) = conditions #Add the condition name as row name
+  
+  # Reorder the plots based on the condition names
+  FI_plots <- FI_plots[order(names(FI_plots))]
   
   # We use the previous code to plot the FI trends for all conditions
   FI_plot <- display_multiple_plots(FI_plots, layout = layout) # Display the plots in one
