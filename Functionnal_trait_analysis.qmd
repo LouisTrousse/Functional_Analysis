@@ -13,10 +13,6 @@ editor: visual
 
 -   
 
-## Notes :
-
-Plus besoin du Fichier Weight.csv (il est directement calculé en fonction de l'abondance de chacune des spp).
-
 ## Functionnal trait analysis
 
 This analysis is based on the work of Gomez Gras *et al.*, 2021, working on the change of the functional identity of coralligenous reef facing marine heat waves. The approach used, is also also based on the work of Teixido *et al.* 2018 on the characterization of changes in ecosystem function accross CO2 gradients.
@@ -98,7 +94,7 @@ sites <- read.table("./Raw_files/Sites.txt", sep="\t", header=T, row.names=1)
 Here is the detail of each document
 
 | Document       | Descrition                                                                                                                                                                                                                                                                                                                                                      |
-|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|------------|------------------------------------------------------------|
 | FE_ordered.csv | Description of Functionnal Entities according to their trait values. Colums are variables taken into account to form FE and lines are each unique FE.                                                                                                                                                                                                           |
 | Species_FE.csv | Classification of each species into funtional entities. This file contain two collums, one containing species name and one containing FE code associated.                                                                                                                                                                                                       |
 | Abundances.csv | Abundance (% cover) of each taxonomic unit found in every assemblage over the monitored location and period (replicates are photoquadrats for each combination of location and period). This file is a community matrix containing result of community caracterisation with each species in colum and each line coresponding to a replicate (i.e. Photoquadrat) |
