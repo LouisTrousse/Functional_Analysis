@@ -281,7 +281,7 @@ create_convex_hull_plot <- function(Fonctional_diversity_coord, binded, n_cluste
 # These functions are meant to be used directly in your analysis and allow you to conduct analysis as in the following papers: 
 
 ##### Function to create a functional space #####
-create_functional_space <- function(mat_funct, traits_weights = NULL, nbdim = 11, metric = "Gower", dendro = FALSE, plot = "quality_funct_space", output_file = "FE_4D_coord.csv") {
+create_functional_space <- function(mat_funct, traits_weights = NULL, nbdim = 11, metric = "Gower", dendro = FALSE, plot = "quality_funct_space", output_file = "FE_coord.csv") {
   ### Function to create a functional space based on functional entities and their traits ###
   
   # Load necessary packages

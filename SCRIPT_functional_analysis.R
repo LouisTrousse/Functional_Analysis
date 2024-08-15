@@ -7,7 +7,7 @@
 # Gómez-Gras, D., Linares, C., Dornelas, M., Madin, J., Brambilla, V., Ledoux, J.-B., López-Sendino, P., Bensoussan, N., & Garrabou, J. (2021). Climate change transforms the functional identity of Mediterranean coralligenous assemblages. Ecology Letters. https://doi.org/10.1111/ele.13718
 # Teixidó, N., Gambi, M. C., Parravacini, V., Kroeker, K., Micheli, F., Villéger, S., & Ballesteros, E. (2018). Functional biodiversity loss along natural CO2 gradients. Nature Communications, 9(1), 5149. https://doi.org/10.1038/s41467-018-07592-1
 
-# The purpose of this script is to perform a functionnal analysis on a dataset containing informations about the abundances of different species classified in different groups based on their functional traits.
+# The purpose of this script is to perform a functional analysis on a dataset containing informations about the abundances of different species classified in different groups based on their functional traits.
 # To work properly, the script need to be in the same folder as the data file and this script and the one that contain the functions need to be in the same folder. 
 
 # This work is a reproduction and an improvement of the script profided by Gomez-Gras et al. (2021) and Teixidó et al. (2018) to make it easier to use and to make it more flexible. All treatments are similar to thoses performed by the authors, but are here done with functions to make them easier to reproduce with different datasets. Details about the functions are here hidden to make the script easier to read. All details can be found in the script of the function itself.
@@ -18,9 +18,9 @@
 
 ##### Load dataset ##### 
 # Please enter your data file names
-Functional_Entities <- read.csv2("./Functional_Entities_TE.csv", sep=",", dec=".")# Load information about species and their functional traits
-Abundance_data <- read.csv2("./Abundance_data_TE.csv", sep=",", dec=".", row.names=1)# Load information about the abundances of the species in different samples (e.g. quadrats)
-Sample_metadata <- read.csv2("Sample_metadata_TE.csv", sep=",", dec=".") # Load information about the samples (e.g. location, site, year, treatment, etc.)
+Functional_Entities <- read.csv2("./Functional_Entities.csv", sep=",", dec=".")# Load information about species and their functional traits
+Abundance_data <- read.csv2("./Abundance_data.csv", sep=",", dec=".", row.names=1)# Load information about the abundances of the species in different samples (e.g. quadrats)
+Sample_metadata <- read.csv2("./Sample_metadata.csv", sep=",", dec=".") # Load information about the samples (e.g. location, site, year, treatment, etc.)
 
 ##### Load Functions ####
 # CAREFUL : The functions scripts need to be in the same folder as this script
@@ -32,15 +32,14 @@ source("functionalanalysis.R")
 
 # Filter the data based on the metadata
 # Filter Sample Metadata to keep only Pallazu and Pallazinu 
-Sample_metadata <- Sample_metadata[Sample_metadata$Site %in% c("Palazzinu_25m", "Palazzu_25m"),]
+Sample_metadata <- Sample_metadata[Sample_metadata$Site %in% c("Pzzu_cor","Pzzu_par","Pzzinu_par"),]
 # Filter Abundances data set to keep Pallazinu and Pallazu samples
 Abundance_data <- Abundance_data[rownames(Abundance_data) %in% Sample_metadata$Quadrat,] %>%
   select(which(colSums(Abundance_data) > 0)) #Filter to keep only present taxa
-
 # Keep present Functional Entities
 Functional_Entities <- Functional_Entities[Functional_Entities$Species %in% colnames(Abundance_data),]
 
-##### Functionnal Space ##### 
+##### Functional Space ##### 
 # CAREFUL : This function need your intervention to choose the number of dimensions to keep. Please enter the number of dimensions you want to keep in the console when asked. 
 # The mean squared_deviation index is display and will help you to choose the number of dimensions to keep.
 Functional_space <- create_functional_space(mat_funct = Functional_Entities,
@@ -70,18 +69,37 @@ condition_column <- "Year" # Please enter the name of the column in the Sample_m
 layout <- "column" # Choose your layout : "column" or "row" as needed (visualisation of different conditions in columns or rows)
 
 # Colors for the different conditions
-colors <- c("Palazzu_25m_2016" = "#3A5FCD",
-            "Palazzu_25m_2023" = "#CD2626",
-            "Palazzinu_25m_2006" ="#F9D71C" ,
-            "Palazzinu_25m_2011" = "#33CC33",
-            "Palazzinu_25m_2016" = "#3A5FCD",
-            "Palazzinu_25m_2023" = "#CD2626")
-edges_colors <- c("Palazzu_25m_2016" = "#3A5FCD",
-                  "Palazzu_25m_2023" = "#CD2626",
-                  "Palazzinu_25m_2006" ="#F9D71C" ,
-                  "Palazzinu_25m_2011" = "#33CC33",
-                  "Palazzinu_25m_2016" = "#3A5FCD",
-                  "Palazzinu_25m_2023" = "#CD2626") 
+colors <- c("Pzzu_cor_2003" = "cadetblue",
+            "Pzzu_cor_2011" = "#F9D71C",
+            "Pzzu_cor_2018" = "coral",
+            "Pzzu_par_2006" = "cadetblue",
+            "Pzzu_par_2011" = "#F9D71C",
+            "Pzzu_par_2018" = "coral",
+            "Gabin_par_1999" = "cadetblue",
+            "Gabin_par_2007" = "#F9D71C",
+            "Gabin_par_2009" ="coral",
+            "Pzzinu_par_2006" = "cadetblue",
+            "Pzzinu_par_2011" = "#F9D71C",
+            "Pzzinu_par_2016" ="coral",
+            "Passe_cor_2006" = "cadetblue",
+            "Passe_cor_2011" = "#F9D71C",
+            "Passe_cor_2018"= "coral")
+edges_colors <- c("Pzzu_cor_2003" = "cadetblue",
+                  "Pzzu_cor_2011" = "#F9D71C",
+                  "Pzzu_cor_2018" = "coral",
+                  "Pzzu_par_2006" = "cadetblue",
+                  "Pzzu_par_2011" = "#F9D71C",
+                  "Pzzu_par_2018" = "coral",
+                  "Gabin_par_1999" = "cadetblue",
+                  "Gabin_par_2007" = "#F9D71C",
+                  "Gabin_par_2009" ="coral",
+                  "Pzzinu_par_2006" = "cadetblue",
+                  "Pzzinu_par_2011" = "#F9D71C",
+                  "Pzzinu_par_2016" ="coral",
+                  "Passe_cor_2006" = "cadetblue",
+                  "Passe_cor_2011" = "#F9D71C",
+                  "Passe_cor_2018"= "coral")
+
 
 # Number of clusters to compute during broad clustering step
 # This number is the maximum number of functional clusters that you want to compute. Function will compute the optimal number of clusters based on the data.
@@ -116,7 +134,7 @@ cluster_colors <- c("1"= "black",
 
 ###### Functional Richness in Functional Space ###### 
 # Launch function
-Frich_in_Functionnal_space <- frich_in_functionnal_space(Site_Data = Sample_metadata,
+Frich_in_Functional_space <- frich_in_Functional_space(Site_Data = Sample_metadata,
                                                          Fonctional_diversity_coord = fd.coord,
                                                          Species_Functional_Entities = Functional_Entities,
                                                          Abundance_matrix = Abundance_data,
@@ -128,23 +146,23 @@ Frich_in_Functionnal_space <- frich_in_functionnal_space(Site_Data = Sample_meta
                                                          n_perm = 100)
 
 # Pass results to workspace
-Frich_in_space <- Frich_in_Functionnal_space[[1]]
-Null_Frich <- Frich_in_Functionnal_space[[2]]
+Frich_in_space <- Frich_in_Functional_space[[1]]
+Null_Frich <- Frich_in_Functional_space[[2]]
 
 # Save results 
 # In .SVG and .jpeg format (choose the format you want)
 # Dimensions are set for the example, please specify dimension for your own dataset
-# For functionnal richness in space
+# For Functional richness in space
 ggsave("Frich_Plots.svg", Frich_in_space, width = 40, height = 20, units = "cm")
 ggsave("Frich_Plots.jpeg", Frich_in_space, width = 40, height = 20, units = "cm")
-# For Functionnal richness under null hypothesis
+# For Functional richness under null hypothesis
 ggsave("Frich_Plots_Sites.svg", Null_Frich, width = 40, height = 5, units = "cm")
 ggsave("Frich_Plots_Sites.jpeg", Null_Frich, width = 40, height = 5, units = "cm")
 
 ###### Traits in functional Space (vector and organisation) ######
 # Launch function
 space_traits <- space_traits(Fonctional_diversity_coord = fd.coord,
-                             Species_functionnal_traits = Functional_Entities,
+                             Species_functional_traits = Functional_Entities,
                              gower = gower,
                              fit = fit)
 
@@ -212,11 +230,12 @@ lapply(1:length(Trait_abundances), function(x){
   title <- names(Trait_abundances[x])
   plot <- Trait_abundances[[x]]
   ggsave(paste0(title,"_Trait_abundances.svg"), plot, device = "svg", width = 40, height = 30, units = "cm")
+  ggsave(paste0(title,"_Trait_abundances.jpeg"), plot, device = "jpeg", width = 40, height = 30, units = "cm")
 })
 
 ###### Functional traits clustering ######
 # Launch function
-Functionnal_clusters <- functionnal_clustering(gower = gower,
+Functional_clusters <- functional_clustering(gower = gower,
                                                Cluster_limit = Cluster_limit,
                                                Fonctional_diversity_coord = fd.coord,
                                                Species_Functional_Entities = Functional_Entities,
@@ -226,12 +245,12 @@ Functionnal_clusters <- functionnal_clustering(gower = gower,
                                                Title ="Global")
 
 # Pass results to workspace
-Cluster_plot <- Functionnal_clusters$Cluster_plot
-Sites_functionnal_cluster <- Functionnal_clusters$Sites_functionnal_cluster
-Sites_functionnal_Abundance <- Functionnal_clusters$Sites_functionnal_Abundance
-plot(Sites_functionnal_Abundance)
-Sites_Functionnal_Clusters_abundances <- Functionnal_clusters$Sites_Functionnal_Clusters_abundances
-Tab_Site_cluster_abundances <- Functionnal_clusters$Tab_Site_cluster_abundances
+Cluster_plot <- Functional_clusters$Cluster_plot
+Sites_functional_cluster <- Functional_clusters$Sites_functional_cluster
+Sites_functional_Abundance <- Functional_clusters$Sites_functional_Abundance
+plot(Sites_functional_Abundance)
+Sites_Functional_Clusters_abundances <- Functional_clusters$Sites_Functional_Clusters_abundances
+Tab_Site_cluster_abundances <- Functional_clusters$Tab_Site_cluster_abundances
 
 # Save results
 # In .SVG and .jpeg format (choose the format you want)
@@ -242,16 +261,16 @@ ggsave("Cluster_plot.svg", plot = Cluster_plot, device = "svg", width = 20, heig
 ggsave("Cluster_plot.jpeg", plot = Cluster_plot, device = "jpeg", width = 20, height = 20, units = "cm")
 
 # Clustering by Site
-ggsave("Sites_functionnal_cluster.svg", plot = Sites_functionnal_cluster, device = "svg", width = 40, height = 10, units = "cm")
-ggsave("Sites_functionnal_cluster.jpeg", plot = Sites_functionnal_cluster, device = "jpeg", width = 40, height = 10, units = "cm")
+ggsave("Sites_functional_cluster.svg", plot = Sites_functional_cluster, device = "svg", width = 40, height = 10, units = "cm")
+ggsave("Sites_functional_cluster.jpeg", plot = Sites_functional_cluster, device = "jpeg", width = 40, height = 10, units = "cm")
 
 # Number of species per cluster in each site 
-ggsave("Sites_functionnal_Abundance.svg", plot = Sites_functionnal_Abundance, device = "svg", width = 40, height = 10, units = "cm")
-ggsave("Sites_functionnal_Abundance.jpeg", plot = Sites_functionnal_Abundance, device = "jpeg", width = 40, height = 10, units = "cm")
+ggsave("Sites_functional_Abundance.svg", plot = Sites_functional_Abundance, device = "svg", width = 40, height = 10, units = "cm")
+ggsave("Sites_functional_Abundance.jpeg", plot = Sites_functional_Abundance, device = "jpeg", width = 40, height = 10, units = "cm")
 
 # Abundances of each cluster
-ggsave("Sites_Functionnal_Clusters_abundances.svg", plot = Sites_Functionnal_Clusters_abundances, device = "svg", width = 40, height = 10, units = "cm")
-ggsave("Sites_Functionnal_Clusters_abundances.jpeg", plot = Sites_Functionnal_Clusters_abundances, device = "jpeg", width = 40, height = 10, units = "cm")
+ggsave("Sites_Functional_Clusters_abundances.svg", plot = Sites_Functional_Clusters_abundances, device = "svg", width = 40, height = 10, units = "cm")
+ggsave("Sites_Functional_Clusters_abundances.jpeg", plot = Sites_Functional_Clusters_abundances, device = "jpeg", width = 40, height = 10, units = "cm")
 
 # Table of abundances of each cluster
 write_xlsx(Tab_Site_cluster_abundances,"Tab_Site_cluster_abundances.xlsx")
