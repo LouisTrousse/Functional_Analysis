@@ -1,21 +1,30 @@
 ---
-title: "Functionnal_trait_based_analysis"
+title: "Functionnal traits based analysis"
 author: "Louis Trousse"
 format: html
 editor: visual
 ---
 
-## TO DO !!
+# Description
 
--   A partir des matrices d'abondances de chacunes des conditions, il est possible de regarder la composition spécifique pour chacune de ces condtions et de les comparer entre elles suivant un script précédemment fait.
+The purpose of this script is to perform a functional analysis on a dataset containing information about the abundances of different species classified into groups based on their functional traits. This analysis is based on the work of Gomez Gras et al. (2021), which focuses on the changes in the functional identity of coralligenous assemblages in response to marine heatwaves. The approach used is also based on the work of Teixido et al. (2018) on the characterization of functional biodiversity loss along natural CO2 gradients. Please cite these authors if you use this work. This work reproduces and improves upon the script provided by Gomez-Gras et al. (2021) and Teixidó et al. (2018), making it easier to use and more flexible. While all treatments are similar to those performed by the authors, they are implemented here with functions to facilitate reproduction with different datasets. The details of the functions are hidden in this script for readability, but all details can be found within the function script itself.
 
--   Explorer la possibilité une classification fonctionelle pour la partie biotique de l'habitat 3D par exemple avec des classes de volumes d'habitat, des types de substrats etc. Permettrait d'obtenir de nouvelles indications sur la complexité fonctionelle de l'habitat.
+# Principle and Prerequisites
 
--   
+For the script to work properly, it must be in the same folder as the data file, and this script and the ones containing the functions need to be in the same folder.
 
-## Functionnal trait analysis
+Three datasets are necessary for the script to function correctly:
 
-This analysis is based on the work of Gomez Gras *et al.*, 2021, working on the change of the functional identity of coralligenous reef facing marine heat waves. The approach used, is also also based on the work of Teixido *et al.* 2018 on the characterization of changes in ecosystem function accross CO2 gradients.
+-   **Abundance_data**: Contains results of species abundances.
+
+```{=html}
+<!-- -->
+```
+-   **Functional_Entities**: Contains detailled information on functional traits.
+
+-   **Sample_metadata**: Contains metadata for the samples, including at least three pieces of information: Quadrat, Site, and Year (or equivalent).
+
+Please note that in the provided script, all datasets are in .csv format. Feel free to change the extension to your preferred format, as long as the dataset maintains the same structure as the one previously shown.
 
 ## Organisms clasification into functionnal entities
 
@@ -46,6 +55,10 @@ This classification allows to create a unique code for organizations sharing the
 -   **Physicial.defences :**
 
 Trait values were selected as the most accurate average description of species-specific traits. As some species show plasticity in the expression of certain traits and we were interested in global comparisons across species rather than on intraspecific variation, a fuzzy coding procedure based on coarse ranked and nominal categories was applied (Cheven *et al.,* 1994).
+
+## Installation guide
+
+## Utilisation guide
 
 # Functionnal Analysis
 
@@ -94,7 +107,7 @@ sites <- read.table("./Raw_files/Sites.txt", sep="\t", header=T, row.names=1)
 Here is the detail of each document
 
 | Document       | Descrition                                                                                                                                                                                                                                                                                                                                                      |
-|------------|------------------------------------------------------------|
+|----------------|--------------------------------------------------------|
 | FE_ordered.csv | Description of Functionnal Entities according to their trait values. Colums are variables taken into account to form FE and lines are each unique FE.                                                                                                                                                                                                           |
 | Species_FE.csv | Classification of each species into funtional entities. This file contain two collums, one containing species name and one containing FE code associated.                                                                                                                                                                                                       |
 | Abundances.csv | Abundance (% cover) of each taxonomic unit found in every assemblage over the monitored location and period (replicates are photoquadrats for each combination of location and period). This file is a community matrix containing result of community caracterisation with each species in colum and each line coresponding to a replicate (i.e. Photoquadrat) |
