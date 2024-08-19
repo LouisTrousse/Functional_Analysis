@@ -12,7 +12,7 @@ The purpose of this work is to perform a functional analysis on a dataset contai
 
 This analysis is based on the work of Gomez Gras *et al.* [@gómez-gras2021] which focuses on the changes in the functional identity of coralligenous assemblages in response to marine heatwaves. The approach used is also based on the work of Teixido et al. [@teixidó2018] on the characterization of functional biodiversity loss along natural CO~2~ gradients. Please cite these authors if you use this work. This work reproduces and improves upon the script provided by Gomez-Gras *et al.* [@gómez-gras2021] and Teixido *et al.* [@teixidó2018], making it easier to use and more flexible. While all treatments are similar to those performed by the authors, they are implemented here with functions to facilitate reproduction with different datasets. The details of the functions are hidden in the principal script for readability, but all details can be found within the function script itself.
 
-# 1. Priniples and prerequisites
+# 1. Principles and prerequisites
 
 ## 1.1. Scripts
 
@@ -136,36 +136,27 @@ Before you begin, ensure you have the latest version of R and Rstudio (recommand
 
 # 3. Utilisation guide
 
-## Prepare working environment
+## 3.1. Folder preparation
 
-To conduct this analysis script and files should be place in the same folder. Thus, if you are working in a R project, only the specification of this folder will be necessary at the creation of the project. Otherwise, the specification of the working directory is necessary before starting analysis.
+In the folder where you want to conduct this analysis, place your three datasets: **Abundance_data**, **Functional_Entities**, and **Sample_metadata**. The scripts and files should also be placed in the same folder. Ensure that you have the necessary scripts in your folder (**quality_funct_space** and **functionalanalysis**). Open your R and start scripting or use the script provided : **SCRIPT_functional_analysis.R.**
 
-Once all files and working directory specify, the installation and loading of packages usefull for the analysis is required.
+## 3.2. Working environment preparation
 
-## Conducte the Functionnal Analysis
+Set your working directory before starting any analysis using the **setwd()** command, and ensure you are in your analysis folder. If you are working in an R project (recommended), the working directory is already set to your project directory.
 
-### Load required data
+Once your working directory is set, use appropriate commands to load your datasets in your environment. At this step you can also filter your datasets if needed before running any analysis.
 
-Once data files are placed in the right folder, they have to be charged in R environnement. To do so, please use following code :
+## 3.3. Create Functional Space
 
-Here is the detail of each document
+Use the ***create_functional_space()*** function to calculate the functional trait-based space based on your functional matrix.
 
-| Document       | Descrition                                                                                                                                                                                                                                                                                                                                                      |
-|------------|------------------------------------------------------------|
-| FE_ordered.csv | Description of Functionnal Entities according to their trait values. Colums are variables taken into account to form FE and lines are each unique FE.                                                                                                                                                                                                           |
-| Species_FE.csv | Classification of each species into funtional entities. This file contain two collums, one containing species name and one containing FE code associated.                                                                                                                                                                                                       |
-| Abundances.csv | Abundance (% cover) of each taxonomic unit found in every assemblage over the monitored location and period (replicates are photoquadrats for each combination of location and period). This file is a community matrix containing result of community caracterisation with each species in colum and each line coresponding to a replicate (i.e. Photoquadrat) |
-| Sites.txt      | Metadata file containing informations about site and year for each photoquadrat. Photoquadrat names are shared between this file and the abundances one.                                                                                                                                                                                                        |
+It will compute the quality (i.e., mean squared deviation between the initial functional distance and the standardized distance in the functional space) for the best functional dendrogram and all multidimensional functional spaces from 2 to N dimensions. The lower the mean sqared deviation, the higher the quality of the functional space. A graphical output illustrating the quality of each functional space is also provided. Since the quality is displayed for each dimension, the function will prompt you to enter the number of dimensions to keep for further analysis. Please enter this number in your R console, keeping in mind that the space should represent a significant portion of your data while being small enough to limit computational time and resources. Four dimensions are usually a good compromise.
 
-## Create Functional Space
+### 3.3.1. Principle
 
-Given a functional matrix, the function computes the quality (i.e. mean squared-deviation between initial functional distance and standardized distance in the functional space) for the best functional dendrogram and all the multidimensional functional spaces from 2 to N dimensions (N selected by the user). A graphical output illustrating the quality of each functional space is also provided.
+As precised by Gomez gras *et al*. [@gómez-gras2021] , based on Functional Entities and associated matrix of traits a Principal Coordinate analysis (PCoA) is conducted. It is based on a Gower Dissimilarity matrix because different type of traits are provided (nominal and numerical) and the Gower dissimilarity index allows for mixed types of data (see [@legendre2012]). The PCoA
 
-As precised by Gomez gras *et al*., 2021, based on Functional Entities a Principal Coordinate analysis (PCoA) based on a Gower dissimilarity matrix was performed to create a multidimentional trait spaces in which FEs of each assemblages and temporal point were positionned according to their differences in traits values.
-
-The Gower dissimilarity index was chosen because it allows for mixed types of data (see Legendre & Legendre, 2012). In their paper Four PCoA dimensions were retained in order to balance the amount of explained variation (75%), the computational times and a low mean squared-deviation index values (mSD = 0.003). The mean squared deviation is the average squared difference between the estimated values and the actual value.
-
-To create functional space, a function called quality_funct_space is used. It is based on the work of Maire et al. 2015 (Global Ecology and Biogeography). Given a functional matrix, the function computes the quality (i.e. mean squared-deviation between initial functional distance and standardized distance in the functional space) for the best functional dendrogram and all the multidimensional functional spaces from 2 to N dimensions (N selected by the user). A graphical output illustrating the quality of each functional space is also provided. The Code was done by Eva Maire & Sébastien Villéger (sebastien.villeger\@cnrs.fr). Please read the file if a better understanding is needed. **To work, the code for this function must be placed in the same file.**
+a Principal Coordinate analysis (PCoA) based on a Gower dissimilarity matrix is performed to create a multidimentional trait spaces in which FEs of each assemblages and temporal point were positionned according to their differences in traits values.
 
 This function take 6 arguments :
 
