@@ -1,60 +1,98 @@
 ---
-title: "Functionnal traits based analysis"
+title: "Functionnal trait-based analysis"
 author: "Louis Trousse"
 format: html
 editor: visual
+bibliography: references.bib
 ---
 
 # Description
 
-The purpose of this script is to perform a functional analysis on a dataset containing information about the abundances of different species classified into groups based on their functional traits. This analysis is based on the work of Gomez Gras et al. (2021), which focuses on the changes in the functional identity of coralligenous assemblages in response to marine heatwaves. The approach used is also based on the work of Teixido et al. (2018) on the characterization of functional biodiversity loss along natural CO2 gradients. Please cite these authors if you use this work. This work reproduces and improves upon the script provided by Gomez-Gras et al. (2021) and Teixidó et al. (2018), making it easier to use and more flexible. While all treatments are similar to those performed by the authors, they are implemented here with functions to facilitate reproduction with different datasets. The details of the functions are hidden in this script for readability, but all details can be found within the function script itself.
+The purpose of this work is to perform a functional analysis on a dataset containing information about the abundances of different species classified into groups based on their functional traits. This analysis is useful for comparing the functional identity of communities within one locality or another grouping factor, especially when facing a specific condition (e.g., over time, before/after a specific event, during a specific treatment, etc.).
 
-# Principle and Prerequisites
+This analysis is based on the work of Gomez Gras et al. (2021) which focuses on the changes in the functional identity of coralligenous assemblages in response to marine heatwaves. The approach used is also based on the work of Teixido et al. (2018) on the characterization of functional biodiversity loss along natural CO~2~ gradients. Please cite these authors if you use this work. This work reproduces and improves upon the script provided by Gomez-Gras *et al.* (2021) and Teixidó *et al.* (2018), making it easier to use and more flexible. While all treatments are similar to those performed by the authors, they are implemented here with functions to facilitate reproduction with different datasets. The details of the functions are hidden in the principal script for readability, but all details can be found within the function script itself.
 
-For the script to work properly, it must be in the same folder as the data file, and this script and the ones containing the functions need to be in the same folder.
+# Principle and prerequisites
+
+## Scripts
+
+To conduct this functional trait-based analyis, two script containing some functions are needed :
+
+1.  "***quality_funct_space***" coded by Eva Maire & Sébastien Villéger (sebastien.villeger\@cnrs.fr) is an update from [@maire2015]. It computes the quality (i.e. mean squared-deviation between initial functional distance and standardized distance in the functional space) for the best functional dendrogram and all the multidimensional functional spaces from 2 to N dimensions (N selected by the user).
+
+2.  "***functionalanalysis***" is the main script containing all functions to compute the analysis conducted by Gomez Gras et al. (2021).
+
+One additional script is provided : "***SCRIPT_functional_analysis"***, it is not mandatory but serves as a good base for running this analysis easily or in a "routine" manner. Following document describe what do this script. For the script to work properly, it must be in the same folder as the data file and the ones containing the functions.
+
+## Datasets
 
 Three datasets are necessary for the script to function correctly:
 
 -   **Abundance_data**: Contains results of species abundances.
-
-```{=html}
-<!-- -->
-```
 -   **Functional_Entities**: Contains detailled information on functional traits.
-
 -   **Sample_metadata**: Contains metadata for the samples, including at least three pieces of information: Quadrat, Site, and Year (or equivalent).
 
-Please note that in the provided script, all datasets are in .csv format. Feel free to change the extension to your preferred format, as long as the dataset maintains the same structure as the one previously shown.
+Please note that in the provided script, all datasets are in .csv format. Feel free to change the extension to your preferred format, as long as the dataset maintains the same structure as the one previously shown. Ensure to change the script accordingly.
 
-## Organisms clasification into functionnal entities
+The following part describe how work this analysis and use as example datasets provided by Gomez Gras et al. (2021). Datasets can be changed as long as they maintain the same structure. Here we review the construction of these datasets one by one.
 
-This classification allows to create a unique code for organizations sharing the same functional characteristics. This code, called FE -Fuctional Entities-, represent a group of species pocessing an identical combination of categorised/ranked trait values. It is a combination of the values associated with the following 12 different functional traits :
+### ***Functional_Entities*** **:** Organisms classification into functional entities
 
--   **Morphology :**
+These dataset contain information about the classification of organisms into Functional Entities (FE). This classification creates a unique code for each set of functional characteristics or traits. This code, called FE (Functional Entities), represents a group of species possessing an identical combination of categorized/ranked trait values. It is organised as follow :
 
--   (growth.rate) :
+| FE    | Species | Trait_1 | Trait_2 | Trait_3 | Trait_4 | Trait_5 |
+|-------|---------|---------|---------|---------|---------|---------|
+| a1bb1 | Sp_1    | a       | 1       | b       | b       | 1       |
+| b3aa2 | Sp2     | b       | 3       | a       | a       | 2       |
+| a2ba1 | Sp_2    | a       | 2       | b       | a       | 1       |
+| a1bb1 | Sp_3    | a       | 1       | b       | b       | 1       |
 
--   **Solitary.colonial :**
+The column **Species** contains your species list or any other taxa unit, with one entry per taxa. Each **Trait\_** column contains a set of letters or integers that describe possible combinations for one functional trait. Letters are used to describe nominal traits and integers are used to describe quantitative or ranked traits. The combination of all trait values for one species constitute its **FE** code. Note that more than one species can have the same FE code even from different groups. The script provided in this work can be used with any species and traits as needed for your purposes. To work properly, don't change the titles of FE and Species columns
 
--   **Maximum.longevity :**
+For example, in the data provided by Gomez Gras et al. (2021), FE is a combination of the values associated with the following 12 functional traits:
 
--   **Height :**
+|                            |                                                                                                                                                                                                                                       |
+|-------------------------|-----------------------------------------------|
+| **Morphology**             | \(a\) Boring, (b) Encrusting, (c) Filaments, (d) Stolonial,                                                                                                                                                                           
+                              (e) Foliose Erect, (f) Articulated, (g) Corymbose, (h) Cup-like, (i) Mass.-Encr., (j) Mass.-Erect (k) Mass. Hem. (l), Tree-like                                                                                                        |
+| **Growth.rate**            | \(1\) Extreme slow (\< 1cm\* year^-1^)                                                                                                                                                                                                
+                              (2) Slow (\~ 1 cm \* year ^-1^),                                                                                                                                                                                                       
+                              (3) Moderate (1–5 cm \* year ^-1^),                                                                                                                                                                                                    
+                              (4) High (5–10 cm \* year ^-1^),                                                                                                                                                                                                       
+                              (5) Very High (\> 10 cm \* year ^-1^)                                                                                                                                                                                                  |
+| **Solitary.colonial**      | \(1\) Solitary, (2) Colonial/Gregarious                                                                                                                                                                                               |
+| **Maximum.longevity**      | \(1\) Very low (weeks), (2) Low (months; \< 12), (3) Medium (1–3 years), (4) High (3–20 years), (5) Very High (\>20 years)                                                                                                            |
+| **Height (max)**           | \(1\) Very low (\< 1 cm / 1cm), (2) Low (2–5 cm), (3) Medium (5–20 cm), (4) High (20–50 cm), (5) Very High (\>50 cm)                                                                                                                  |
+| **Width (max)**            | \(1\) Very low (\< 1 cm / 1cm), (2) Low (2–5 cm), (3) Medium (5–20 cm), (4) High (20–50 cm), (5) Very High (\>50 cm)                                                                                                                  |
+| **Epibiosis :**            | \(1\) Never, (2) Facultative, (3) Obligate                                                                                                                                                                                            |
+| **Energetic.ressources**   | \(1\) Autotroph, (2) Auto-heterotroph, (3) Heterotroph                                                                                                                                                                                |
+| **Photosynthetic_pigment** | \(a\) None, (b) Chl a/b (e.g. green algae), (c) Chl a/c, Fucoxanthin, (e.g. brown algae), (d) Chl a, Phycocyanin, Phycoerythrin (e.g. red algae), (e) Chl a, Phycocy-anin (Cyanobacteria), (f) Dinoflagellathed, (g) Mix. (e.g. turf) |
+| **Feeding**                | \(a\) Primary producer, (b) Active filter feeder w. cilia, (c) Active filter feeder by pumping, (d) Passive filter feeder, (e) Mixture, (f) Saprophytic                                                                               |
+| **Age.at.reproduction**    | \(1\) Very low (weeks), (2) Low (months; \< 12), (3) Moderate (1–5 years), (4) High (\> 5 years)                                                                                                                                      |
+| **Physicial.defences**     | \(a\) Non-calcifier, (b) Non-calc. spicules, (c) Calc. spicules and sclerites, (d) Carbonate w. discontinuities, (f) Continuous Carbonate, (g) Mixture                                                                                |
 
--   **Width :**
+: For each species trait values were selected as the most accurate average description of species-specific traits. As some species show plasticity in the expression of certain traits and we were interested in global comparisons across species rather than on intraspecific variation, a fuzzy coding procedure based on coarse ranked and nominal categories was applied (Cheven *et al.,* 1994).
 
--   **Epibiosis :**
+To ensure the proper functioning of the analysis, be aware of the importance of certain characters in R. For example, don't use special characters like "/", "", "(", or ")" in your column names or taxa names. Prefer using "\_" or "." instead.
 
--   **Energetic.ressources :**
+### ***Sample_metadata*** **: sampling unit information**
 
--   **Photosynthetic_pigment :**
+This dataset contains information about the sample design used. It is composed of at least three columns as follows (values are given as examples):
 
--   **Feeding :**
+| Quadrat                      | Site   | Condition   |
+|------------------------------|--------|-------------|
+| Condition_1_Quadrat_Site_1_1 | Site_1 | Condition_1 |
+| Condition_1_Quadrat_Site_1_2 | Site_1 | Condition_1 |
+| Condition_1_Quadrat_Site_2_1 | Site_2 | Condition_1 |
+| Condition_1_Quadrat_Site_2_2 | Site_2 | Condition_1 |
+| Condition_2_Quadrat_Site_1_1 | Site_1 | Condition_2 |
+| Condition_2_Quadrat_Site_1_2 | Site_1 | Condition_2 |
 
--   **Age.at.reproduction :**
+The **Quadrat** column contains the smaller sampling unit use for sampling communities. The **Site** column contains the unit in wich comparison is wished, it can be any other grouping factor but for this column and the previous one, the names Quadrat and Site has to be kept.
 
--   **Physicial.defences :**
+**Global Principle of all function**
 
-Trait values were selected as the most accurate average description of species-specific traits. As some species show plasticity in the expression of certain traits and we were interested in global comparisons across species rather than on intraspecific variation, a fuzzy coding procedure based on coarse ranked and nominal categories was applied (Cheven *et al.,* 1994).
+Given a functional matrix, the function computes the quality (i.e. mean squared-deviation between \## \## initial functional distance and standardized distance in the functional space) for the best functional \## \## dendrogram and all the multidimensional functional spaces from 2 to N dimensions (N selected by the user). \## \## A graphical output illustrating the quality of each functional space is also provided.
 
 ## Installation guide
 
@@ -107,7 +145,7 @@ sites <- read.table("./Raw_files/Sites.txt", sep="\t", header=T, row.names=1)
 Here is the detail of each document
 
 | Document       | Descrition                                                                                                                                                                                                                                                                                                                                                      |
-|----------------|--------------------------------------------------------|
+|------------|------------------------------------------------------------|
 | FE_ordered.csv | Description of Functionnal Entities according to their trait values. Colums are variables taken into account to form FE and lines are each unique FE.                                                                                                                                                                                                           |
 | Species_FE.csv | Classification of each species into funtional entities. This file contain two collums, one containing species name and one containing FE code associated.                                                                                                                                                                                                       |
 | Abundances.csv | Abundance (% cover) of each taxonomic unit found in every assemblage over the monitored location and period (replicates are photoquadrats for each combination of location and period). This file is a community matrix containing result of community caracterisation with each species in colum and each line coresponding to a replicate (i.e. Photoquadrat) |
