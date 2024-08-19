@@ -10,21 +10,21 @@ bibliography: references.bib
 
 The purpose of this work is to perform a functional analysis on a dataset containing information about the abundances of different species classified into groups based on their functional traits. This analysis is useful for comparing the functional identity of communities within one locality or another grouping factor, especially when facing a specific condition (e.g., over time, before/after a specific event, during a specific treatment, etc.).
 
-This analysis is based on the work of Gomez Gras et al. (2021) which focuses on the changes in the functional identity of coralligenous assemblages in response to marine heatwaves. The approach used is also based on the work of Teixido et al. (2018) on the characterization of functional biodiversity loss along natural CO~2~ gradients. Please cite these authors if you use this work. This work reproduces and improves upon the script provided by Gomez-Gras *et al.* (2021) and Teixidó *et al.* (2018), making it easier to use and more flexible. While all treatments are similar to those performed by the authors, they are implemented here with functions to facilitate reproduction with different datasets. The details of the functions are hidden in the principal script for readability, but all details can be found within the function script itself.
+This analysis is based on the work of Gomez Gras *et al.* [@gómez-gras2021] which focuses on the changes in the functional identity of coralligenous assemblages in response to marine heatwaves. The approach used is also based on the work of Teixido et al. [@teixidó2018] on the characterization of functional biodiversity loss along natural CO~2~ gradients. Please cite these authors if you use this work. This work reproduces and improves upon the script provided by Gomez-Gras *et al.* [@gómez-gras2021] and Teixido *et al.* [@teixidó2018], making it easier to use and more flexible. While all treatments are similar to those performed by the authors, they are implemented here with functions to facilitate reproduction with different datasets. The details of the functions are hidden in the principal script for readability, but all details can be found within the function script itself.
 
-# Principle and prerequisites
+# 1. Priniples and prerequisites
 
-## Scripts
+## 1.1. Scripts
 
 To conduct this functional trait-based analyis, two script containing some functions are needed :
 
 1.  "***quality_funct_space***" coded by Eva Maire & Sébastien Villéger (sebastien.villeger\@cnrs.fr) is an update from [@maire2015]. It computes the quality (i.e. mean squared-deviation between initial functional distance and standardized distance in the functional space) for the best functional dendrogram and all the multidimensional functional spaces from 2 to N dimensions (N selected by the user).
 
-2.  "***functionalanalysis***" is the main script containing all functions to compute the analysis conducted by Gomez Gras et al. (2021).
+2.  "***functionalanalysis***" is the main script containing all functions to compute the analysis conducted by Gomez Gras *et al*. [@gómez-gras2021] .
 
 One additional script is provided : "***SCRIPT_functional_analysis"***, it is not mandatory but serves as a good base for running this analysis easily or in a "routine" manner. Following document describe what do this script. For the script to work properly, it must be in the same folder as the data file and the ones containing the functions.
 
-## Datasets
+## 1.2. Datasets
 
 Three datasets are necessary for the script to function correctly:
 
@@ -34,32 +34,27 @@ Three datasets are necessary for the script to function correctly:
 
 Please note that in the provided script, all datasets are in .csv format. Feel free to change the extension to your preferred format, as long as the dataset maintains the same structure as the one previously shown. Ensure to change the script accordingly.
 
-The following part describe how work this analysis and use as example datasets provided by Gomez Gras et al. (2021). Datasets can be changed as long as they maintain the same structure. Here we review the construction of these datasets one by one.
+The following part describe how work this analysis and use as example datasets provided by Gomez Gras *et al.* [@gómez-gras2021]. Datasets can be changed as long as they maintain the same structure. Here we review the construction of these datasets one by one.
 
-### ***Functional_Entities*** **:** Organisms classification into functional entities
+### ***1.2.1. Functional_Entities*** **:** Organisms classification into functional entities
 
-These dataset contain information about the classification of organisms into Functional Entities (FE). This classification creates a unique code for each set of functional characteristics or traits. This code, called FE (Functional Entities), represents a group of species possessing an identical combination of categorized/ranked trait values. It is organised as follow :
+This dataset contains information about the classification of organisms into Functional Entities (FE). This classification creates a unique code for each set of functional characteristics or traits. This code, called FE (Functional Entities), represents a group of species possessing an identical combination of categorized/ranked trait values. It is organised as follow :
 
 | FE    | Species | Trait_1 | Trait_2 | Trait_3 | Trait_4 | Trait_5 |
 |-------|---------|---------|---------|---------|---------|---------|
 | a1bb1 | Sp_1    | a       | 1       | b       | b       | 1       |
-| b3aa2 | Sp2     | b       | 3       | a       | a       | 2       |
-| a2ba1 | Sp_2    | a       | 2       | b       | a       | 1       |
-| a1bb1 | Sp_3    | a       | 1       | b       | b       | 1       |
+| b3aa2 | Sp_2    | b       | 3       | a       | a       | 2       |
+| a2ba1 | Sp_3    | a       | 2       | b       | a       | 1       |
+| a1bb1 | Sp_4    | a       | 1       | b       | b       | 1       |
 
 The column **Species** contains your species list or any other taxa unit, with one entry per taxa. Each **Trait\_** column contains a set of letters or integers that describe possible combinations for one functional trait. Letters are used to describe nominal traits and integers are used to describe quantitative or ranked traits. The combination of all trait values for one species constitute its **FE** code. Note that more than one species can have the same FE code even from different groups. The script provided in this work can be used with any species and traits as needed for your purposes. To work properly, don't change the titles of FE and Species columns
 
-For example, in the data provided by Gomez Gras et al. (2021), FE is a combination of the values associated with the following 12 functional traits:
+For example, in the data provided by Gomez Gras *et al.* [@gómez-gras2021], FE is a combination of the values associated with the following 12 functional traits:
 
 |                            |                                                                                                                                                                                                                                       |
 |-------------------------|-----------------------------------------------|
-| **Morphology**             | \(a\) Boring, (b) Encrusting, (c) Filaments, (d) Stolonial,                                                                                                                                                                           
-                              (e) Foliose Erect, (f) Articulated, (g) Corymbose, (h) Cup-like, (i) Mass.-Encr., (j) Mass.-Erect (k) Mass. Hem. (l), Tree-like                                                                                                        |
-| **Growth.rate**            | \(1\) Extreme slow (\< 1cm\* year^-1^)                                                                                                                                                                                                
-                              (2) Slow (\~ 1 cm \* year ^-1^),                                                                                                                                                                                                       
-                              (3) Moderate (1–5 cm \* year ^-1^),                                                                                                                                                                                                    
-                              (4) High (5–10 cm \* year ^-1^),                                                                                                                                                                                                       
-                              (5) Very High (\> 10 cm \* year ^-1^)                                                                                                                                                                                                  |
+| **Morphology**             | \(a\) Boring, (b) Encrusting, (c) Filaments, (d) Stolonial (e) Foliose Erect, (f) Articulated, (g) Corymbose, (h) Cup-like, (i) Mass.-Encr., (j) Mass.-Erect (k) Mass. Hem. (l), Tree-like                                            |
+| **Growth.rate**            | \(1\) Extreme slow (\< 1cm\* year^-1^), (2) Slow (\~ 1 cm \* year ^-1^), (3) Moderate (1–5 cm \* year ^-1^), (4) High (5–10 cm \* year ^-1^), (5) Very High (\> 10 cm \* year ^-1^)                                                   |
 | **Solitary.colonial**      | \(1\) Solitary, (2) Colonial/Gregarious                                                                                                                                                                                               |
 | **Maximum.longevity**      | \(1\) Very low (weeks), (2) Low (months; \< 12), (3) Medium (1–3 years), (4) High (3–20 years), (5) Very High (\>20 years)                                                                                                            |
 | **Height (max)**           | \(1\) Very low (\< 1 cm / 1cm), (2) Low (2–5 cm), (3) Medium (5–20 cm), (4) High (20–50 cm), (5) Very High (\>50 cm)                                                                                                                  |
@@ -75,9 +70,9 @@ For example, in the data provided by Gomez Gras et al. (2021), FE is a combinati
 
 To ensure the proper functioning of the analysis, be aware of the importance of certain characters in R. For example, don't use special characters like "/", "", "(", or ")" in your column names or taxa names. Prefer using "\_" or "." instead.
 
-### ***Sample_metadata*** **: sampling unit information**
+### ***1.2.2. Sample_metadata*** **: sampling unit information**
 
-This dataset contains information about the sample design used. It is composed of at least three columns as follows (values are given as examples):
+This dataset contains informations about the sample design used. It is composed of at least three columns as follows (values are given as examples):
 
 | Quadrat                      | Site   | Condition   |
 |------------------------------|--------|-------------|
@@ -88,59 +83,70 @@ This dataset contains information about the sample design used. It is composed o
 | Condition_2_Quadrat_Site_1_1 | Site_1 | Condition_2 |
 | Condition_2_Quadrat_Site_1_2 | Site_1 | Condition_2 |
 
-The **Quadrat** column contains the smaller sampling unit use for sampling communities. The **Site** column contains the unit in wich comparison is wished, it can be any other grouping factor but for this column and the previous one, the names Quadrat and Site has to be kept.
+The **Quadrat** column contains the smallest sampling unit used for sampling communities. The **Site** column contains the unit in which comparison is desired; it can be any other grouping factor. However, for both this column and the previous one, the names Quadrat and Site must be kept in order for the functions to run correctly. The last column, "**Condition**" can be replaced by any condition you may need. It represents the condition for which you want to compare your data. You can also add any other columns to this dataset to fulfill your purpose and accommodate any additional treatments you may require.
 
-**Global Principle of all function**
+### **1.2.3. Abundance_data : Matrix of abundances of the different taxa**
 
-Given a functional matrix, the function computes the quality (i.e. mean squared-deviation between \## \## initial functional distance and standardized distance in the functional space) for the best functional \## \## dendrogram and all the multidimensional functional spaces from 2 to N dimensions (N selected by the user). \## \## A graphical output illustrating the quality of each functional space is also provided.
+This dataset contains the results of quadrat or photoquadrat characterization. It is a matrice of abundances of the different taxa of interest. This community characterization dataset has the following structure : first column contains the sampling names (which should match those in the **Quadrat** column of the previous dataset); columns represent identified taxandefined. Values are the abundances of each taxa in the corresponding sample unit (i.e. quadrat). This dataset should have the following shape :
 
-## Installation guide
+|                              | Sp_1 | Sp_2 | Sp_3 | Sp_4 |
+|------------------------------|------|------|------|------|
+| Condition_1_Quadrat_Site_1_1 |      |      |      |      |
+| Condition_1_Quadrat_Site_1_2 |      |      |      |      |
+| Condition_1_Quadrat_Site_2_1 |      |      |      |      |
+| Condition_1_Quadrat_Site_2_2 |      |      |      |      |
+| Condition_2_Quadrat_Site_1_1 |      |      |      |      |
 
-## Utilisation guide
+Please note that the names of taxa should be the same as those presented in the **Functional_Entities** dataset.
 
-# Functionnal Analysis
+## 1.3. Global principles of the analysis
 
-## Working environment
+This analysis contains different functions that allow you to explore functional trait distributions in a functional space.
 
-### Prepare working environment
+-   Given a functional matrix, the first function called ***create_functional_space()***, computes the quality (i.e., mean squared deviation between the initial functional distance and the standardized distance in the functional space) for the best functional dendrogram and all multidimensional functional spaces from 2 to N dimensions (with N selected by the user). Based on the chosen functional space, the coordinates of all functional entities are retrieved. These coordinates, in a new coordinate system with reduced dimensions, can then be used to visualize your data along a choosen condition.
+
+-   First, a function called ***frich_in_functional_space()*** computes the Frich (Functional Richness) index as the 4D convex hull volume of the multidimensional trait space generated for an assemblage of a specific condition. A two-dimensional projection of this Frich, compared to the global functional space, is also computed and displayed.
+
+-   Next, a function called ***space_traits()*** positions variables in the functional space. Numerical trait categories are represented as vectors, while nominal traits are represented as points in the space. The positioning of these traits helps to understand the placement of functional identities within the functional space.
+
+-   Afterward, a function called ***traits_distribution()*** runs various analyses. It first computes the Functional Identity (FI) of an assemblage under a specific condition as the abundance-weighted centroid of the community in the multidimensional trait space[@mouillot2013]. It then plots this FI in the functional space alongside abundance and location information for each functional entity (FE). A nonparametric analysis of variance (PERMANOVA) is then used to test whether the observed FI values significantly differ between conditions within the same Site, compared to the null hypothesis that FI remains constant across conditions. Another graphical representation can also be displayed, showing the distribution of each trait's values within functional categories at a given site and condition. This helps to identify where shifts in the functional space occur when they happen.
+
+-   Finally, a function called **f*unctional_clustering()*** performs a broader classification. This classification is based on Partition Around Medoids (PAM) and selects the optimal number of clusters using the average silhouette width criterion. This method allows for further reduction in the number of functional groups, enabling exploration of how many species are present in each group within our datasets. By doing so, if some functional groups are represented by only one or a few species, it indicates a lack of functional redundancy. The loss of species in these groups can be critical for ecosystem functioning, as there may not be other species to fulfill their vacant functional roles.
+
+# 2. Installation guide
+
+Before you begin, ensure you have the latest version of R and Rstudio (recommanded) installed on your machine. then, two solutions can be used to install and conduct this analysis on your datasets :
+
+1.  Cloning the repository via Git
+
+2.  Downloading the ZIP file directly from GitHub:
+
+## 2.1. Option 1 : Cloning repository 
+
+1.  Install Git (if not already installed on your machine), installation guide can be easily found on the web
+2.  Open a terminal in R studio for example and run the following command \
+    ***"git*** ***clone https://github.com/LouisTrousse/Functional_Analysis"***
+
+## 2.2. Option 2 : Downloading ZIP from GitHub:
+
+1.  If you are not there, go to the GitHub repository of this analysis *(LouisTrousse/Functional_Analysis (github.com))*
+2.  Click the **"Code"** button
+3.  Select to **"Download ZIP"**
+4.  Extract the ZIP file to your desired location
+
+# 3. Utilisation guide
+
+## Prepare working environment
 
 To conduct this analysis script and files should be place in the same folder. Thus, if you are working in a R project, only the specification of this folder will be necessary at the creation of the project. Otherwise, the specification of the working directory is necessary before starting analysis.
 
-Once all files and working directory specify, the installation and loading of packages usefull for the analysis is required. To do so, please use the following code (If installation needed, please uncomment corresponding lines.
+Once all files and working directory specify, the installation and loading of packages usefull for the analysis is required.
 
-```{r}
-# #### Install required packages
-# install.packages("FD") # FD is a package for functional diversity measures
-# install.packages("tripack") # Triangulation of irregularly spaced data
-# install.packages("geometry") # Geometric operations on point sets
-# install.packages("matrixStats") # Functions that operate on rows and columns of matrices
-# install.packages("ggplot2") # Create elegant data visualisations using the grammar of graphics
-
-#### Load required packages
-library('FD')
-library('tripack')
-library('geometry')
-library('matrixStats')
-library('ggplot2')
-```
+## Conducte the Functionnal Analysis
 
 ### Load required data
 
 Once data files are placed in the right folder, they have to be charged in R environnement. To do so, please use following code :
-
-```{r}
-# Load FEs data
-fes <- read.csv("./Raw_files/FE_ordered.csv", sep=";", dec=",", row.names=1)
-
-#Load Species and FEs data
-spe_fes <- read.csv("./Raw_files/Species_FE.csv", sep=";", dec=",", row.names=1)
-
-#Load Abundance data
-ab <- read.csv2("./Raw_files/Abundances.csv", sep=";", dec=",", row.names=1)
-
-#Load sites and quadrats 
-sites <- read.table("./Raw_files/Sites.txt", sep="\t", header=T, row.names=1)
-```
 
 Here is the detail of each document
 
@@ -153,24 +159,13 @@ Here is the detail of each document
 
 ## Create Functional Space
 
+Given a functional matrix, the function computes the quality (i.e. mean squared-deviation between initial functional distance and standardized distance in the functional space) for the best functional dendrogram and all the multidimensional functional spaces from 2 to N dimensions (N selected by the user). A graphical output illustrating the quality of each functional space is also provided.
+
 As precised by Gomez gras *et al*., 2021, based on Functional Entities a Principal Coordinate analysis (PCoA) based on a Gower dissimilarity matrix was performed to create a multidimentional trait spaces in which FEs of each assemblages and temporal point were positionned according to their differences in traits values.
 
 The Gower dissimilarity index was chosen because it allows for mixed types of data (see Legendre & Legendre, 2012). In their paper Four PCoA dimensions were retained in order to balance the amount of explained variation (75%), the computational times and a low mean squared-deviation index values (mSD = 0.003). The mean squared deviation is the average squared difference between the estimated values and the actual value.
 
 To create functional space, a function called quality_funct_space is used. It is based on the work of Maire et al. 2015 (Global Ecology and Biogeography). Given a functional matrix, the function computes the quality (i.e. mean squared-deviation between initial functional distance and standardized distance in the functional space) for the best functional dendrogram and all the multidimensional functional spaces from 2 to N dimensions (N selected by the user). A graphical output illustrating the quality of each functional space is also provided. The Code was done by Eva Maire & Sébastien Villéger (sebastien.villeger\@cnrs.fr). Please read the file if a better understanding is needed. **To work, the code for this function must be placed in the same file.**
-
-```{r}
-#load "Quality functionnal space" function
-source("./Raw_files/quality_funct_space.R")
-
-#Calculate Quality function, please change information to adapt to your own dataset
-qfs <- quality_funct_space(mat_funct = fes,
-                           traits_weights=NULL, 
-                           nbdim=11,
-                           metric="Gower",
-                           dendro=FALSE, 
-                           plot="quality_funct_space")
-```
 
 This function take 6 arguments :
 
@@ -188,26 +183,7 @@ This function take 6 arguments :
 
 In order to verify the quality of space, the meanSD value need to be checked. A low meanSD means a high quality of the representation ( as mean squared deviation is the average squared difference between the estimated values in a specify space and the actual value in a multiple space.
 
-```{r}
-# quality of spaces (low meanSD = high quality)
-round( qfs$meanSD , 4)
-```
-
 This value have to be minimal, but a compromise should be made, beetween the number of dimension to use and this value, as an augmentation of the number of dimension increse computational time. As an example , the dimension at which meanSD \< 0.004 is a good "rule of thumb" . I the following code, 4 first dimensions are conserved, but this value maybe changed to fullfill your purpose.
-
-```{r}
-# keeping coordinates on the 4 dimensions, meanSD<0.004
-fd.coord <- qfs$details_funct_space$mat_coord[,1:4]
-
-# write result for further analyses
-write.csv(fd.coord, file="FE_4D_coord.csv") #to use it for further analyses
-
-#see variance explained by the PCoA axes
-gower<-qfs$details_funct_space$mat_dissim # store matrix 
-fit <- cmdscale(gower,eig=TRUE, k=4) # PCoA
-#variance explained by the axes
-cumsum(fit$eig[fit$eig>=0]) / sum(fit$eig[fit$eig>0])
-```
 
 In the code above, the variance explained by PCoA axes can be seen, the 4 first explain 75 % of the variance.
 
@@ -227,76 +203,16 @@ In this part we will draw graphics that represent the functional richness under 
 
     this step allow to precise conditions (localization and date) to draw plot in function.
 
-    ```{r}
-    # Defining sites and Time points. 
-    condition <- c("Pzzu_cor_2003", "Pzzu_cor_2011" , "Pzzu_cor_2018", "Pzzu_par_2006",
-                   "Pzzu_par_2011", "Pzzu_par_2018", "Gabin_par_1999", "Gabin_par_2007", 
-                   "Gabin_par_2009", "Pzzinu_par_2006","Pzzinu_par_2011","Pzzinu_par_2016", 
-                   "Passe_cor_2006","Passe_cor_2011","Passe_cor_2018")
-    ```
-
 2.  Data Manipulation and arrangements\
     This step allows to create a dataframe called ab.conditions for abundances per conditions, which summarise abundances data for each condition.
 
-    ```{r}
-    # Data manipulation and arrangements 
-
-    ab.conditions <- lapply(condition, function(x) {
-      # For current value of x in condition, find row names of the Sites dataframe where year is equal to x. The result is stored in the temporary variable "quad".
-      quad <- rownames(sites[sites$Year == x,])
-
-    # Subset ab dataframe to include rows where row names match those in "quad". Then, it calculates the sum of each column for this subset of rows. The result is a vector of column sums.
-      colSums(ab[rownames(ab) %in% quad,])
-      
-    })
-
-    #After the lapply function completes, ab.conditions is a list of vectors (each vector being the column sums for a specific year). The do.call(rbind, ab.conditions) function combines these vectors into a single dataframe by binding them row-wise. Each row in the resulting dataframe corresponds to the column sums for one year.
-    ab.conditions <- do.call(rbind, ab.conditions)
-
-    #sets the row names of the resulting dataframe ab.conditions to the values in condition. Each row is now labeled with the corresponding year from condition.
-    rownames(ab.conditions) = condition
-    ```
-
 3.  Calculate Total Richness
 
-    Before calculating the relative richness, the calculation of the total Richness is necessary, this value is the number of species encountered
-
-    ```{r}
-    Total_rich <- length(spe_fes$FE)
-    ```
+    Before calculating the relative richness, the calculation of the total Richness is necessary, this value is the number of species encountere
 
 4.  Calculate convex hull
 
     111 Taxonomic units in total for calculating the relative richness, but ...
-
-    ```{r}
-    #### Calculate convex hull (111 taxonomic units in total for calculating the relative richness)
-
-    Fric <- lapply(condition, function (x) {
-      
-      # Identify species where ab.conditions[x, ] > 0
-      species <- colnames(ab.conditions)[which(ab.conditions[x,] > 0)]
-      # Subset spe_fes to only include rows with names in species
-      fes_cond <- spe_fes[rownames(spe_fes) %in% species, ]
-      # Subset fd.coord to only include rows with names in fes_cond
-      m <- fd.coord[rownames(fd.coord) %in% fes_cond,]
-      # Compute the convex hull of m and fd.coord using the convhulln function
-      ch <- convhulln(m, options = "FA") # For actual site
-      chg <- convhulln(fd.coord, options = "FA") # For global coralligenous
-      
-      # Return a vector with several calculated values
-      c(length(species), length(species)/111*100, dim(m)[1], dim(m)[1]/dim(fd.coord)[1]*100, ch$vol/chg$vol)
-      
-    }) # End of lapply
-
-    names(Fric) = condition
-
-    # Fric contains the number of species(NbSp) and FEs (NbFEs), relative percentages (NbSpP,NbFEsP ), and the 4D convex hull volume (Frich (Vol4D)) among the 3 temporal points for each habitat
-    Fric <- do.call(rbind, Fric)
-
-    colnames(Fric) <- c("NbSp", "NbSpP", "NbFEs","NbFEsP", "Frich (Vol4D)")
-
-    ```
 
 5.  Plotting convex hull in a reduce space
 
@@ -304,224 +220,13 @@ In this part we will draw graphics that represent the functional richness under 
 
     To plot convex hull in an elegant way, the choice of color is important. To choose these color you are free to change the following code with any color of your choice disponible in R (see this link : <https://r-charts.com/colors/>). If you want to change colors just remember that you need as much colors as you have factors. In the following example ou have 15 factors, so you need 15 color specifications.
 
-```{r}
-#### plot convex hull
-# Choose colors to represent each factors
-# Choose colors to fill convex hull polygons 
-cols <- c("#CD2626", "#F9D71C", "#3A5FCD","#CD2626", "#F9D71C", "#3A5FCD","#CD2626", "#F9D71C", "#3A5FCD","#CD2626","#F9D71C","#3A5FCD","#CD2626", "#F9D71C", "#3A5FCD")
-# Choose colors for polygon edges
-colstr <- c("#CD262670", "#FFFF0070", "#3A5FCD70", "#CD262670", "#FFFF0070", "#3A5FCD70", "#CD262670", "#FFFF0070", "#3A5FCD70",
-            "#CD262670","#FFFF0070","#3A5FCD70","#CD262670", "#FFFF0070", "#3A5FCD70")
-
-# Associate factor names to each colors
-names(cols) <- c("Pzzu_cor_2003", "Pzzu_cor_2011" , "Pzzu_cor_2018", "Pzzu_par_2006",
-                 "Pzzu_par_2011", "Pzzu_par_2018", "Gabin_par_1999", "Gabin_par_2007", 
-                 "Gabin_par_2009", "Pzzinu_par_2006","Pzzinu_par_2011","Pzzinu_par_2016", 
-                 "Passe_cor_2006","Passe_cor_2011","Passe_cor_2018")
-names(colstr) <- c("Pzzu_cor_2003", "Pzzu_cor_2011" , "Pzzu_cor_2018", "Pzzu_par_2006",
-                   "Pzzu_par_2011", "Pzzu_par_2018", "Gabin_par_1999", "Gabin_par_2007", 
-                   "Gabin_par_2009", "Pzzinu_par_2006","Pzzinu_par_2011","Pzzinu_par_2016", 
-                   "Passe_cor_2006","Passe_cor_2011","Passe_cor_2018")
-```
-
 Once you colors specifyed, the real plotting steps can begin.
-
-```{r}
-# Ploting functional spaces 
-# Fig. 2a-o. 
-
-dev.new()# open new graphical window
-
-# Setting up parameters for a .TIFF output.
-tiff(filename="Figure2a_o.tif", height=17, width=11, units="cm", compression = c("lzw"), res=500, pointsize=8)
-
-par(mfrow = c(5,3)) #setting plot layout 
-
-#computing the global convex hull to be represented as background of each plot.
-#The global trait space for all species (100% of space occupied / Frich = 1)
-m2 <- fd.coord[rownames(fd.coord),]#select all coordinates
-tr2 <-tri.mesh(m2[,1],m2[,2]) #Create Delaunay triangulation
-ch2 <- convex.hull(tr2) #Compute convex hull
-
-# Loop to iterate through each condition
-for (i in condition) {
-  # Identify which species are present  
-  species <- colnames(ab.conditions)[which(ab.conditions[i,] > 0)]
-  # Select FEs of present species 
-  fes_cond <- spe_fes[rownames(spe_fes) %in% species, ]
-  
-  #computing convex hull in two dimensions 
-  m <- fd.coord[rownames(fd.coord) %in% fes_cond, ]#subset coordinates of present FEs
-  tr <-tri.mesh(m[,1],m[,2]) #Create Delaunay triangulation of a set of point m[,1] is the first colum containing PC1 coordinates
-  ch <- convex.hull(tr) #Computes convex hull
-  
-  # Draw plot 
-  plot(fd.coord[,1], # x coord
-       fd.coord[,2], # y coord
-       xlab = "PCoA 1", # x axis' label 
-       ylab = "PCoA 2", # y axis' label 
-       type="n", # means no plotting , only corresponding region is drawn
-       main=paste0(i))# Current position of i become title of graph
-  polygon(ch2, col="#CCCCCC30", border=FALSE) # add polygon of global hull
-  polygon(ch, col=colstr[i], border=cols[i]) # add polygon of actual hull
-  points(m[,1:2], pch = 16, col=cols[i]) #draw points
-  
-}#End of Loop
-
-dev.off() # close opened graphical window, finalising plot generation
-```
 
 During the Frich calculation Site and Time specific values are calculated, they are number of species (NbSp) and number of FEs (NbFEs), relative percentages of each (NbSpP,NbFEsP), and the 4D convex hull volume (Frich (Vol4D)) for each condition (Site & Time). These information are present in the Fric ubset and be added to each plot
 
 6.  the next step to represent changes over time of ***Frich*** is to test for difference of FI inside each site over time. To do so each FI value can be tested in front of the null hypothesis that the abundance-weighted centroid of the community remained constant across time. To do so a nonparametric analysis of variance PERMANOVA (permutational multivariate analysis of variance) can be conducted for each site with time as a fixed factor. Here i an example of this step for one site.
 
-    ```{r}
-    #### Passe_cor 2006-2018 (Fig. 2p) ####
-    Specific_condition <- c("Passe_cor_2006", "Passe_cor_2011" , "Passe_cor_2018") 
-
-    ab_Passe_cor = ab[289:360,] # filter ab to contain only passe_cor data 
-    # an other way is to filter if it contain "Passe_cor" in the rownames
-    #ab_Passe_cor = ab[grep("Passe_cor", rownames(ab)),]
-
-    # Data arrangements to conserve only ab corresponding to each condition 
-    ab.conditions <- lapply(condition, function(x) {
-      
-      quad <- rownames(sites[sites$Year == x,]) # filter site to conserve quadrat names that correspond to each condition
-      colSums(ab_Passe_cor[rownames(ab_Passe_cor) %in% quad,])# Calculate sum of abundance for each condition
-      
-    })#eo lapply
-
-    ab.conditions <- do.call(rbind, ab.conditions) # retablish as data frame 
-    rownames(ab.conditions) = condition # retablish rownames 
-    ```
-
 one other way to do same is :
-
-```{r}
-#### Calculate convex hull (101 species in total for calculating the relative richness)
-
-Fric <- lapply(condition, function (x) {
-  
-  species <- colnames(ab.conditions)[which(ab.conditions[x,] > 0)]
-  
-  fes_cond <- spe_fes[rownames(spe_fes) %in% species, ]
-  
-  m <- fd.coord[rownames(fd.coord) %in% fes_cond,]
-  
-  ch <- convhulln(m, options = "FA")
-  
-  chg <- convhulln(fd.coord, options = "FA")
-  
-  c(length(species), length(species)/111*100, dim(m)[1], dim(m)[1]/dim(fd.coord)[1]*100, ch$vol/chg$vol*100)
-  
-})#eo lapply
-
-names(Fric) = condition
-Fric <- do.call(rbind, Fric)
-
-colnames(Fric) <- c("NbSp", "NbSpP", "NbFEs","NbFEsP", "Vol4D")
-
-Fric <- Fric[,c(2,4,5)]
-
-# null model 
-
-n_perm = 100
-
-spe_fes_r = spe_fes
-
-Fric_perm <- lapply(condition, function (x) {
-  
-  species <- colnames(ab.conditions)[which(ab.conditions[x,] > 0)]
-  
-  
-  perm <- sapply((1:n_perm), function (z) {
-    
-    
-    spe_fes_r$FE <- sample(spe_fes$FE)      
-    
-    fes_cond <- spe_fes_r[rownames(spe_fes_r) %in% species, ]
-    
-    m <- fd.coord[rownames(fd.coord) %in% fes_cond,]
-    
-    ch <- convhulln(m, options = "FA")
-    
-    chg <- convhulln(fd.coord, options = "FA")
-    
-    c(length(species), length(species)/111*100, dim(m)[1], dim(m)[1]/dim(fd.coord)[1]*100, ch$vol/chg$vol*100)
-    
-    
-    
-  })#eo sapply
-  
-  rownames(perm) <- c("NbSp", "NbSpP", "NbFE", "NbFEP", "Vol")
-  
-  
-  perm 
-  
-})#eo lapply
-
-names(Fric_perm) = condition
-
-
-
-Fric_perm_Q <- lapply(Fric_perm, function (x) {
-  
-  rowQuantiles(x, probs=c(0.05, 0.95))
-  
-})#eo lapply
-
-Fric = as.data.frame(Fric)
-
-Fric$lowerFE <- sapply(condition, function (x) { Fric_perm_Q[[x]][3,1] })#eo sapply
-Fric$upperFE <- sapply(condition, function (x) { Fric_perm_Q[[x]][3,2] })#eo sapply
-Fric$lowerVol <- sapply(condition, function (x) { Fric_perm_Q[[x]][5,1] })#eo sapply
-Fric$upperVol <- sapply(condition, function (x) { Fric_perm_Q[[x]][5,2] })#eo sapply
-Fric$cond <- condition
-condition <- factor(condition, levels = c("Passe_cor_2006", "Passe_cor_2011" , "Passe_cor_2018"))
-
-Fric$cond <- as.factor(condition)
-levels(Fric$cond)
-colnames(Fric) <- c("NbSp", "NbFE", "Vol4D", "lowerFE", "upperFE", "lowerVol", "upperVol", "cond")
-
-
-#Plot the null model (Passe_cor). Figure 2p
-
-Time1 <- rbind(Fric[1,], Fric[1,])
-Time1$Vol4D <- c(Time1$lowerVol[1], Time1$upperVol[1]) 
-Time2 <- rbind(Fric[2,], Fric[2,])
-Time2$Vol4D <- c(Time2$lowerVol[1], Time2$upperVol[1]) 
-Time3<- rbind(Fric[3,], Fric[3,])
-Time3$Vol4D <- c(Time3$lowerVol[1], Time3$upperVol[1]) 
-
-p1 <- ggplot(Fric,  aes(x = cond, y=Vol8D)) +
-  scale_y_continuous(breaks=c(20,40,60,80,100), limits = c(0,100))+
-  ylab("Relative richness (%)") +
-  xlab("Time")+
-  geom_point(aes(x = cond, y=Vol4D), data=Fric, pch=16, col=cols[c(1,2,3)], cex=4)+
-  geom_line(data=Time1, aes(x = cond, y=Vol4D),lwd=2, col=cols["Passe_cor_2006"]) +
-  geom_line(data=Time2, aes(x = cond, y=Vol4D),lwd=2, col=cols["Passe_cor_2011"]) +
-  geom_line(data=Time3, aes(x = cond, y=Vol4D),lwd=2, col=cols["Passe_cor_2018"])+
-  ggtitle("Passe_cor")+
-  theme(plot.title = element_text(hjust = 0.5,size=17))+
-  coord_flip()+
-  theme(axis.text.x=element_text(colour="black", size=12), strip.text.x=element_text(size=18,face="bold"),
-        strip.background=element_rect(color="black",fill="gainsboro",size=1.1))+
-  theme(axis.title.x = element_text(size=14))+
-  theme(axis.title.y = element_text(size=14))+
-  theme(axis.text.y=element_text(colour="black", size=12), strip.text.x=element_text(size=18,face="bold"),
-        strip.background=element_rect(color="black",fill="gainsboro",size=1.1))+
-  scale_x_discrete(labels=c("T3","T2","T1"),limits = rev(levels(Fric$cond)))+
-  theme(axis.line.y = element_line(),
-        axis.line.x=element_line(),
-        panel.grid.major=element_blank(),
-        panel.border= element_rect(colour = "black", fill=NA, size=0.8),
-        panel.background=element_blank())
-
-
-tiff(filename="Figure_2p.tif", height=10, width=10, units="cm", compression = c("lzw"), res=300, pointsize=8)
-p1
-dev.off()
-```
 
 ### Abundance distribution of traits and fuctionnal identity (FI)
 
