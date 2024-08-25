@@ -52,7 +52,7 @@ The column **Species** contains your species list or any other taxa unit, with o
 For example, in the data provided by Gomez Gras *et al.* [@gómez-gras2021], FE is a combination of the values associated with the following 12 functional traits:
 
 |                            |                                                                                                                                                                                                                                       |
-|-------------------------|-----------------------------------------------|
+|-------------------------|----------------------------------------------|
 | **Morphology**             | \(a\) Boring, (b) Encrusting, (c) Filaments, (d) Stolonial (e) Foliose Erect, (f) Articulated, (g) Corymbose, (h) Cup-like, (i) Mass.-Encr., (j) Mass.-Erect (k) Mass. Hem. (l), Tree-like                                            |
 | **Growth.rate**            | \(1\) Extreme slow (\< 1cm\* year^-1^), (2) Slow (\~ 1 cm \* year ^-1^), (3) Moderate (1–5 cm \* year ^-1^), (4) High (5–10 cm \* year ^-1^), (5) Very High (\> 10 cm \* year ^-1^)                                                   |
 | **Solitary.colonial**      | \(1\) Solitary, (2) Colonial/Gregarious                                                                                                                                                                                               |
@@ -121,10 +121,10 @@ Before you begin, ensure you have the latest version of R and Rstudio (recommand
 
 2.  Downloading the ZIP file directly from GitHub:
 
-## 2.1. Option 1 : Cloning repository 
+## 2.1. Option 1 : Cloning repository
 
 1.  Install Git (if not already installed on your machine), installation guide can be easily found on the web
-2.  Open a terminal in R studio for example and run the following command \
+2.  Open a terminal in R studio for example and run the following command\
     ***"git*** ***clone https://github.com/LouisTrousse/Functional_Analysis"***
 
 ## 2.2. Option 2 : Downloading ZIP from GitHub:
@@ -154,9 +154,7 @@ It will compute the quality (i.e., mean squared deviation between the initial fu
 
 ### 3.3.1. Principle
 
-As precised by Gomez gras *et al*. [@gómez-gras2021] , based on Functional Entities and associated matrix of traits a Principal Coordinate analysis (PCoA) is conducted. It is based on a Gower Dissimilarity matrix because different type of traits are provided (nominal and numerical) and the Gower dissimilarity index allows for mixed types of data (see [@legendre2012]). The PCoA
-
-a Principal Coordinate analysis (PCoA) based on a Gower dissimilarity matrix is performed to create a multidimentional trait spaces in which FEs of each assemblages and temporal point were positionned according to their differences in traits values.
+As precised by Gomez gras *et al*. [@gómez-gras2021] , based on Functional Entities and associated matrix of traits a Principal Coordinate analysis (PCoA) is conducted. It is based on a Gower Dissimilarity matrix because different type of traits are provided (nominal and numerical) and the Gower dissimilarity index allows for mixed types of data (see [@legendre2012]). The PCoA is performed to create a multidimentional trait spaces in which FEs of each assemblages and temporal point were positionned according to their differences in traits values.
 
 This function take 6 arguments :
 
@@ -172,11 +170,9 @@ This function take 6 arguments :
 
 -   "plot" : character string to set the name of the jpeg file for plots illustrating the quality of functional spaces (NA means no plot).
 
-In order to verify the quality of space, the meanSD value need to be checked. A low meanSD means a high quality of the representation ( as mean squared deviation is the average squared difference between the estimated values in a specify space and the actual value in a multiple space.
+In order to verify the quality of space, the meanSD (Mean Squarred deviation) value need to be checked. A low meanSD means a high quality of the representation ( as mean squared deviation is the average squared difference between the estimated values in a specify space and the actual value in a multidimensional space). This value have to be minimal, but a compromise should be made, beetween the number of dimension to use and this value, as an augmentation of the number of dimension increase computational time.
 
-This value have to be minimal, but a compromise should be made, beetween the number of dimension to use and this value, as an augmentation of the number of dimension increse computational time. As an example , the dimension at which meanSD \< 0.004 is a good "rule of thumb" . I the following code, 4 first dimensions are conserved, but this value maybe changed to fullfill your purpose.
-
-In the code above, the variance explained by PCoA axes can be seen, the 4 first explain 75 % of the variance.
+## 3.4. 
 
 ## Functional Richness (Frich) and functional identity (FI)
 
